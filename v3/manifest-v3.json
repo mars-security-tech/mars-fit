@@ -1,0 +1,51 @@
+{
+  "name": "MARS FIT v3 - Entrenamiento & Nutricion",
+  "short_name": "MARS FIT",
+  "description": "App de entrenamiento, nutricion y teams sociales. Modo civil y operativo MARS Seguridad. PWA offline-first.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "id": "/v3/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a0a0f",
+  "theme_color": "#0a0a0f",
+  "lang": "es",
+  "dir": "ltr",
+  "categories": ["health", "fitness", "lifestyle"],
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "../icons/icon.png",
+      "sizes": "822x1084",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "../icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Entrenar hoy",
+      "short_name": "Entreno",
+      "url": "./index.html#/workout",
+      "description": "Ir a la sesion de entrenamiento del dia",
+      "icons": []
+    },
+    {
+      "name": "Registrar comida",
+      "short_name": "Comida",
+      "url": "./index.html#/nutrition",
+      "description": "Registrar una comida o tomar foto",
+      "icons": []
+    }
+  ],
+  "handle_links": "preferred",
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  }
+}

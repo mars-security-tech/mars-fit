@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0A0A0F">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="MARS FIT">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="description" content="Entrenamiento, nutricion y teams. MARS FIT.">
+  <title>MARS FIT</title>
+  <link rel="manifest" href="manifest-v3.json">
+  <link rel="icon" type="image/png" href="../icons/icon.png">
+  <link rel="apple-touch-icon" href="../icons/icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/design-system.css">
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+
+  <!-- ============================================================
+       TOPBAR — Glassmorphism header
+       ============================================================ -->
+  <header id="topbar" class="topbar hidden">
+    <a href="#/home" class="topbar__logo" id="logo-home-link" style="text-decoration:none;color:inherit;">
+      <span id="topbar-logo-icon" aria-label="MARS"></span>
+      <span class="topbar__logo-text">MARS <b>FIT</b></span>
+    </a>
+    <div class="topbar__actions">
+      <span id="user-name" class="text-secondary text-sm font-display" style="letter-spacing:0.04em;text-transform:uppercase;"></span>
+      <button id="theme-toggle" class="btn btn--ghost btn--icon btn--sm" aria-label="Cambiar tema"></button>
+      <button id="admin-btn" class="btn btn--ghost btn--icon btn--sm hidden" aria-label="Panel Admin" title="Admin"></button>
+      <button id="logout-btn" class="btn btn--ghost btn--icon btn--sm hidden" aria-label="Cerrar sesion" title="Logout"></button>
+      <div id="user-avatar" class="avatar avatar--sm" role="button" tabindex="0" aria-label="Perfil"></div>
+    </div>
+  </header>
+
+  <!-- ============================================================
+       APP CONTAINER — Vistas se montan aqui
+       ============================================================ -->
+  <main id="app"></main>
+
+  <!-- ============================================================
+       TABBAR — Navegacion inferior 5 tabs
+       ============================================================ -->
+  <nav id="tabbar" class="tabbar hidden" aria-label="Navegacion principal">
+    <button data-route="/home" class="tabbar__item" aria-label="Dashboard">
+      <span class="tabbar__icon"></span>
+      <span>HOY</span>
+    </button>
+    <button data-route="/workout" class="tabbar__item" aria-label="Entrenamiento">
+      <span class="tabbar__icon"></span>
+      <span>ENTRENO</span>
+    </button>
+    <button data-route="/nutrition" class="tabbar__item" aria-label="Nutricion">
+      <span class="tabbar__icon"></span>
+      <span>DIETA</span>
+    </button>
+    <button data-route="/circle" class="tabbar__item" aria-label="Team">
+      <span class="tabbar__icon"></span>
+      <span>TEAM</span>
+    </button>
+    <button data-route="/profile" class="tabbar__item" aria-label="Perfil">
+      <span class="tabbar__icon"></span>
+      <span>PERFIL</span>
+    </button>
+  </nav>
+
+  <script type="module" src="js/app-v3.js"></script>
+</body>
+</html>

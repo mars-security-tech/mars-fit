@@ -1,0 +1,619 @@
+/* ================================================
+   MARS FIT - Light Theme Override
+   Loads AFTER styles.css + theme-v2.css.
+   Overrides dark tokens and selectors for a clean,
+   premium light aesthetic.
+   ================================================ */
+
+/* ---------- 1. Root Token Overrides ---------- */
+:root {
+  --bg: #F5F7FA;
+  --bg-2: #FFFFFF;
+  --card: #FFFFFF;
+  --card-2: #F9FAFB;
+  --border: #E5E7EB;
+  --border-strong: #D1D5DB;
+  --text: #111827;
+  --muted: #6B7280;
+  --mars-gray: #9CA3AF;
+  --shadow: 0 2px 12px rgba(0,0,0,0.06);
+  --radius-card: 20px;
+  --ok: #10B981;
+  --danger: #EF4444;
+
+  /* V2 surface overrides */
+  --v2-surface: #F5F7FA;
+  --v2-surface-card: #FFFFFF;
+  --v2-surface-elevated: #FFFFFF;
+  --v2-border: #E5E7EB;
+  --v2-border-hover: #D1D5DB;
+}
+
+
+/* ---------- 2. Body ---------- */
+html, body {
+  background: var(--bg);
+  color: var(--text);
+}
+body {
+  background: #F5F7FA;
+}
+
+
+/* ---------- 3. Typography ---------- */
+h1, h2, h3, h4 {
+  color: var(--text);
+}
+h3 {
+  color: var(--muted);
+}
+p {
+  color: #4B5563;
+}
+small {
+  color: var(--muted);
+}
+em, i {
+  color: var(--mars-red);
+}
+
+
+/* ---------- 4. Topbar ---------- */
+.topbar {
+  background: #FFFFFF;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.brand-text {
+  color: #111827;
+}
+.brand-text b {
+  color: var(--mars-red);
+}
+
+
+/* ---------- 5. Mode Badge ---------- */
+.mode-badge {
+  background: var(--mars-red);
+  color: #fff;
+}
+.mode-badge.operativo {
+  background: var(--mars-red-dark);
+}
+
+
+/* ---------- 6. Red Bar ---------- */
+/* Kept as-is - red accent works on light */
+
+
+/* ---------- 7. Tabbar ---------- */
+.tabbar {
+  background: rgba(255,255,255,0.97);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid #E5E7EB;
+}
+.tab {
+  color: #9CA3AF;
+}
+.tab.active {
+  color: var(--mars-red);
+}
+.tab.active::before {
+  background: var(--mars-red);
+}
+
+
+/* ---------- 8. Cards ---------- */
+.card {
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-left: 3px solid var(--mars-red);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow);
+}
+.card.flat {
+  border-left: 1px solid #E5E7EB;
+}
+
+
+/* ---------- 9. Tag Title ---------- */
+/* Red tag stays as accent - works well on white */
+
+
+/* ---------- 10. Subtitle Under Tag ---------- */
+.subtitle-under-tag {
+  color: var(--text);
+  border-left-color: var(--mars-red);
+}
+
+
+/* ---------- 11. Hero ---------- */
+.hero {
+  background:
+    linear-gradient(180deg, rgba(218,7,4,0.06) 0%, transparent 60%),
+    #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-top: 3px solid var(--mars-red);
+  box-shadow: var(--shadow);
+  border-radius: var(--radius-card);
+}
+.hero::before {
+  background: radial-gradient(circle at top right, rgba(218,7,4,0.08), transparent 70%);
+}
+.hero h1 {
+  color: #111827;
+}
+.hero h1 span {
+  color: var(--mars-red);
+}
+
+
+/* ---------- 12. Hero Coach ---------- */
+.hero-coach {
+  background:
+    linear-gradient(180deg,
+      rgba(255,255,255,0) 0%,
+      rgba(255,255,255,0.85) 40%,
+      #FFFFFF 100%),
+    linear-gradient(135deg,
+      rgba(218,7,4,0.06) 0%,
+      #F5F7FA 60%);
+  border: 1px solid #E5E7EB;
+  box-shadow: var(--shadow);
+}
+.hero-coach__greeting {
+  color: var(--muted);
+}
+.hero-coach__headline {
+  color: var(--text);
+}
+.hero-coach__headline em {
+  color: var(--mars-red);
+}
+.hero-coach__input {
+  background: #F5F7FA;
+  border: 1px solid #E5E7EB;
+}
+.hero-coach__input:hover {
+  border-color: rgba(218,7,4,0.3);
+}
+.hero-coach__input-text {
+  color: var(--muted);
+}
+
+
+/* ---------- 13. Coach Banner ---------- */
+.coach-banner {
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-left: 3px solid var(--mars-red);
+  box-shadow: var(--shadow);
+}
+.coach-banner:hover {
+  border-color: rgba(218,7,4,0.3);
+  box-shadow: 0 4px 16px rgba(218,7,4,0.08);
+}
+.coach-banner__name {
+  color: var(--mars-red);
+}
+.coach-banner__message {
+  color: #4B5563;
+}
+.coach-banner__message strong {
+  color: var(--text);
+}
+.coach-banner__action {
+  background: rgba(218,7,4,0.08);
+  color: var(--mars-red);
+}
+.coach-banner__action:hover {
+  background: rgba(218,7,4,0.15);
+}
+
+
+/* ---------- 14. Metric Cards ---------- */
+.metric-card {
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  box-shadow: var(--shadow);
+}
+.metric-card::before {
+  opacity: 0.04;
+}
+.metric-card:hover {
+  border-color: #D1D5DB;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+.metric-card:hover::before {
+  opacity: 0.06;
+}
+.metric-card__title {
+  color: var(--muted);
+}
+.metric-card__timestamp {
+  color: var(--muted);
+}
+
+/* Metric card hover overrides for light - softer glow */
+.metric-card.activity:hover { box-shadow: 0 4px 20px rgba(249,115,22,0.12); }
+.metric-card.sleep:hover    { box-shadow: 0 4px 20px rgba(168,85,247,0.12); }
+.metric-card.heart:hover    { box-shadow: 0 4px 20px rgba(239,68,102,0.12); }
+.metric-card.focus:hover    { box-shadow: 0 4px 20px rgba(245,158,11,0.12); }
+.metric-card.balance:hover  { box-shadow: 0 4px 20px rgba(6,182,212,0.12); }
+.metric-card.nutrition:hover { box-shadow: 0 4px 20px rgba(34,197,94,0.12); }
+.metric-card.strength:hover { box-shadow: 0 4px 20px rgba(218,7,4,0.12); }
+.metric-card.wellness:hover { box-shadow: 0 4px 20px rgba(139,92,246,0.12); }
+.metric-card.steps:hover    { box-shadow: 0 4px 20px rgba(34,211,238,0.12); }
+
+/* Metric icon circles - lighter pastel backgrounds */
+.metric-card.activity .metric-card__icon { background: rgba(249,115,22,0.10); }
+.metric-card.sleep .metric-card__icon    { background: rgba(168,85,247,0.10); }
+.metric-card.heart .metric-card__icon    { background: rgba(239,68,102,0.10); }
+.metric-card.focus .metric-card__icon    { background: rgba(245,158,11,0.10); }
+.metric-card.balance .metric-card__icon  { background: rgba(6,182,212,0.10); }
+.metric-card.nutrition .metric-card__icon { background: rgba(34,197,94,0.10); }
+.metric-card.strength .metric-card__icon { background: rgba(218,7,4,0.10); }
+.metric-card.wellness .metric-card__icon { background: rgba(139,92,246,0.10); }
+.metric-card.steps .metric-card__icon    { background: rgba(34,211,238,0.10); }
+
+
+/* ---------- 15. Stat / Stat-Big ---------- */
+.stat {
+  background: #F9FAFB;
+  border: 1px solid #E5E7EB;
+  border-top: 2px solid var(--mars-red);
+}
+.stat b {
+  color: #111827;
+}
+.stat span {
+  color: var(--muted);
+}
+
+.stat-big__number {
+  color: var(--text);
+}
+.stat-big__unit {
+  color: var(--muted);
+}
+.stat-big__label {
+  color: var(--muted);
+}
+
+
+/* ---------- 16. Chips ---------- */
+.chip {
+  background: #F0F2F5;
+  border: 1px solid #D1D5DB;
+  color: #374151;
+}
+.chip:hover {
+  border-color: var(--mars-red);
+  background: #FEF2F2;
+}
+.chip.active {
+  background: var(--mars-red);
+  border-color: var(--mars-red);
+  color: #fff;
+}
+
+
+/* ---------- 17. Buttons ---------- */
+.btn {
+  /* Primary red stays */
+}
+.btn.ghost {
+  background: transparent;
+  border: 1px solid var(--mars-red);
+  color: var(--mars-red);
+}
+.btn.ghost:hover {
+  background: rgba(218,7,4,0.06);
+}
+.btn.dark {
+  background: #F0F2F5;
+  color: #374151;
+  border: 1px solid #D1D5DB;
+}
+.btn.dark:hover {
+  background: #E5E7EB;
+}
+.btn.ok {
+  background: var(--ok);
+}
+
+
+/* ---------- 18. V2 Buttons ---------- */
+.btn-v2 {
+  background: #F5F7FA;
+  border: 1px solid #E5E7EB;
+  color: var(--text);
+}
+.btn-v2:hover {
+  background: #E5E7EB;
+  border-color: #D1D5DB;
+}
+.btn-v2.primary {
+  background: var(--mars-red);
+  border-color: var(--mars-red);
+  color: #fff;
+}
+.btn-v2.primary:hover {
+  background: var(--mars-red-dark);
+  border-color: var(--mars-red-dark);
+}
+
+
+/* ---------- 19. Pill Icon Row ---------- */
+.pill-icon-row__item {
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+}
+.pill-icon-row__item:hover {
+  border-color: #D1D5DB;
+  background: #F9FAFB;
+}
+.pill-icon-row__item.active {
+  border-color: var(--mars-red);
+  background: rgba(218,7,4,0.04);
+}
+.pill-icon-row__label {
+  color: var(--muted);
+}
+.pill-icon-row__item.active .pill-icon-row__label {
+  color: var(--text);
+}
+
+
+/* ---------- 20. Pill Range ---------- */
+.pill-range {
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  color: var(--text);
+}
+.pill-range:hover {
+  border-color: #D1D5DB;
+  background: #F9FAFB;
+}
+.pill-range__icon {
+  color: var(--muted);
+}
+.pill-range__chevron {
+  color: var(--muted);
+}
+
+
+/* ---------- 21. Forms ---------- */
+input, select, textarea {
+  background: #F5F7FA;
+  border: 1px solid #D1D5DB;
+  color: var(--text);
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--mars-red);
+  box-shadow: 0 0 0 3px rgba(218,7,4,0.08);
+  background: #FFFFFF;
+}
+input::placeholder, textarea::placeholder {
+  color: #9CA3AF;
+}
+label {
+  color: var(--muted);
+}
+
+
+/* ---------- 22. Feed ---------- */
+.feed-item {
+  background: #FFFFFF;
+  border-bottom: 1px solid #E5E7EB;
+}
+
+
+/* ---------- 23. Avatar ---------- */
+.avatar {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  border: 2px solid white;
+}
+.avatar.dark {
+  background: var(--mars-red-dark);
+}
+
+
+/* ---------- 24. Avatar Chip ---------- */
+.avatar-chip {
+  box-shadow: 0 2px 8px rgba(218,7,4,0.25);
+}
+
+
+/* ---------- 25. Progress ---------- */
+.progress {
+  background: #E5E7EB;
+  border: 1px solid #D1D5DB;
+  border-radius: 999px;
+}
+.progress > div {
+  border-radius: 999px;
+}
+
+
+/* ---------- 26. Badges ---------- */
+.badge.fire {
+  background: rgba(218,7,4,0.10);
+  color: var(--mars-red);
+}
+.badge.ok {
+  background: rgba(16,185,129,0.10);
+  color: #059669;
+}
+.badge.ghost {
+  background: transparent;
+  border: 1px solid var(--mars-red);
+  color: var(--mars-red);
+}
+
+
+/* ---------- 27. Op Banner ---------- */
+.op-banner {
+  background:
+    repeating-linear-gradient(-45deg, #F5F7FA, #F5F7FA 10px, #EFF1F3 10px, #EFF1F3 20px);
+  border: 1px solid var(--mars-red);
+  box-shadow: var(--shadow);
+  border-radius: var(--radius-card);
+}
+.op-banner p {
+  color: #6B7280;
+}
+.op-banner p b {
+  color: var(--text);
+}
+
+
+/* ---------- 28. Exercise Card / 3D Canvas ---------- */
+.exercise-card .canvas-wrap {
+  background: linear-gradient(135deg, #F0F2F5, #E8EAEE);
+  border: 1px solid #E5E7EB;
+  border-radius: var(--radius-card);
+}
+
+
+/* ---------- 29. Set Rows ---------- */
+.set-row {
+  border-bottom: 1px solid #E5E7EB;
+}
+.set-row input {
+  background: #F5F7FA;
+  color: var(--text);
+  border: 1px solid #D1D5DB;
+}
+.set-row .set-num {
+  color: var(--mars-red);
+}
+.set-row .done {
+  background: var(--mars-red);
+  color: #fff;
+  border-radius: 8px;
+}
+.set-row .done.completed {
+  background: var(--ok);
+}
+.set-row.done-row input {
+  opacity: 0.4;
+}
+
+
+/* ---------- 30. Section Head ---------- */
+.section-head::before {
+  background: var(--mars-red);
+}
+.section-head h2 {
+  color: var(--text);
+}
+
+
+/* ---------- 31. V2 Section Title ---------- */
+.v2-section-title {
+  color: var(--text);
+}
+.v2-section-title small {
+  color: var(--muted);
+}
+
+
+/* ---------- 32. Role Card ---------- */
+.role-card {
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  box-shadow: var(--shadow);
+  border-radius: var(--radius-card);
+}
+.role-card h3 {
+  color: var(--text);
+}
+.role-card p {
+  color: var(--muted);
+}
+.role-card.active {
+  border-color: var(--mars-red);
+  background: rgba(218,7,4,0.03);
+}
+.role-card.active::after {
+  color: var(--mars-red);
+}
+
+
+/* ---------- 33. Gauge ---------- */
+.gauge-semi__value {
+  color: var(--text);
+}
+.gauge-semi__label {
+  color: var(--muted);
+}
+
+
+/* ---------- 34. Sleep Phases ---------- */
+.sleep-phases__label {
+  color: var(--muted);
+}
+
+
+/* ---------- 35. Time Badge ---------- */
+.time-badge {
+  color: var(--muted);
+}
+
+
+/* ---------- 36. V2 Avatar ---------- */
+.v2-avatar {
+  border: 2px solid #E5E7EB;
+}
+
+
+/* ---------- 37. Scrollbar ---------- */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #D1D5DB;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #9CA3AF;
+}
+
+
+/* ---------- 38. Inline style overrides ---------- */
+/* Some views use inline styles with dark colors.
+   These selectors target common inline-styled containers
+   that reference CSS variables, ensuring they pick up
+   the light-theme token values automatically. */
+
+/* Squad compact section in home.js uses inline
+   var(--v2-surface-card) and rgba(255,255,255,0.06)
+   which resolve via our :root overrides */
+
+
+/* ---------- 39. Misc Catch-all ---------- */
+
+/* Coach banner avatar keeps its gradient */
+
+/* Any remaining #222 / #1a1a1a inline bg bars in nutrition */
+/* These use inline styles referencing #222 for progress tracks.
+   We cannot override inline styles via CSS, but the metric
+   cards and chart containers are all covered. */
+
+/* Selection color */
+::selection {
+  background: rgba(218,7,4,0.15);
+  color: var(--text);
+}
+
+/* Focus visible outline */
+:focus-visible {
+  outline: 2px solid var(--mars-red);
+  outline-offset: 2px;
+}

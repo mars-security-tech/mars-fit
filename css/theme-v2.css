@@ -1,0 +1,829 @@
+/* ================================================
+   MARS FIT v2 - Evolved Visual System
+   Combines tactical MARS DNA with modern fitness
+   dashboard aesthetics (metric colors, rounded cards,
+   coach AI, chart containers, big stats).
+
+   LAYER: loads AFTER styles.css - extends, never breaks.
+   ================================================ */
+
+/* ---------- V2 Design Tokens ---------- */
+:root {
+  /* Metric accent colors */
+  --metric-activity:   #F97316;
+  --metric-sleep:      #A855F7;
+  --metric-heart:      #EF4466;
+  --metric-focus:      #F59E0B;
+  --metric-balance:    #06B6D4;
+  --metric-nutrition:  #22C55E;
+  --metric-strength:   #DA0704;
+  --metric-wellness:   #8B5CF6;
+  --metric-steps:      #22D3EE;
+
+  /* Metric gradients */
+  --grad-activity:   linear-gradient(135deg, #F97316, #FB923C);
+  --grad-sleep:      linear-gradient(135deg, #7C3AED, #C084FC);
+  --grad-heart:      linear-gradient(135deg, #DA0704, #EF4466);
+  --grad-focus:      linear-gradient(135deg, #F59E0B, #FBBF24);
+  --grad-balance:    linear-gradient(135deg, #06B6D4, #2DD4BF);
+  --grad-nutrition:  linear-gradient(135deg, #16A34A, #4ADE80);
+  --grad-strength:   linear-gradient(135deg, #7D0604, #DA0704);
+  --grad-wellness:   linear-gradient(135deg, #8B5CF6, #EC4899, #F59E0B);
+  --grad-steps:      linear-gradient(135deg, #06B6D4, #22D3EE);
+
+  /* Sleep phase gradients */
+  --sleep-deep:    linear-gradient(180deg, #4C1D95, #7C3AED);
+  --sleep-rem:     linear-gradient(180deg, #7C3AED, #A78BFA);
+  --sleep-light:   linear-gradient(180deg, #A78BFA, #C4B5FD);
+  --sleep-awake:   linear-gradient(180deg, #F59E0B, #FCD34D);
+
+  /* V2 radii */
+  --radius-card:   24px;
+  --radius-pill:   999px;
+  --radius-inner:  4px;
+  --radius-icon:   50%;
+
+  /* V2 surfaces */
+  --v2-surface:      #0D0D0D;
+  --v2-surface-card: #141414;
+  --v2-surface-elevated: #1A1A1A;
+  --v2-border:       rgba(255,255,255,0.06);
+  --v2-border-hover: rgba(255,255,255,0.12);
+
+  /* V2 typography sizes */
+  --stat-xl:   56px;
+  --stat-lg:   48px;
+  --stat-md:   36px;
+  --stat-sm:   28px;
+  --label-sm:  11px;
+  --label-md:  13px;
+
+  /* V2 transitions */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --t-fast:  150ms;
+  --t-med:   280ms;
+  --t-slow:  450ms;
+}
+
+
+/* ================================================
+   1. METRIC CARDS
+   ================================================ */
+.metric-card {
+  background: var(--v2-surface-card);
+  border: 1px solid var(--v2-border);
+  border-radius: var(--radius-card);
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+  transition:
+    border-color var(--t-med) var(--ease-out-expo),
+    box-shadow var(--t-med) var(--ease-out-expo),
+    transform var(--t-fast) ease;
+}
+
+/* Subtle top-left glow per metric */
+.metric-card::before {
+  content: "";
+  position: absolute;
+  top: -40%;
+  left: -20%;
+  width: 60%;
+  height: 80%;
+  border-radius: 50%;
+  opacity: 0.06;
+  pointer-events: none;
+  transition: opacity var(--t-med) var(--ease-out-expo);
+}
+
+.metric-card:hover {
+  border-color: var(--v2-border-hover);
+  transform: translateY(-2px);
+}
+
+.metric-card:hover::before {
+  opacity: 0.10;
+}
+
+/* Metric card header layout */
+.metric-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.metric-card__title {
+  font-family: var(--font-title);
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+}
+
+.metric-card__timestamp {
+  font-family: var(--font-body);
+  font-size: var(--label-sm);
+  color: var(--muted);
+  letter-spacing: 0.04em;
+}
+
+/* Metric icon circle */
+.metric-card__icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-icon);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+/* Chart area inside metric card */
+.metric-card__chart {
+  width: 100%;
+  margin-top: 12px;
+  min-height: 60px;
+}
+
+/* ---------- Activity ---------- */
+.metric-card.activity { border-top: 2px solid var(--metric-activity); }
+.metric-card.activity::before { background: var(--metric-activity); }
+.metric-card.activity:hover { border-color: var(--metric-activity); box-shadow: 0 0 24px rgba(249,115,22,0.10); }
+.metric-card.activity .metric-card__icon { background: rgba(249,115,22,0.15); color: var(--metric-activity); }
+.metric-card.activity .metric-card__title { color: var(--metric-activity); }
+
+/* ---------- Sleep ---------- */
+.metric-card.sleep { border-top: 2px solid var(--metric-sleep); }
+.metric-card.sleep::before { background: var(--metric-sleep); }
+.metric-card.sleep:hover { border-color: var(--metric-sleep); box-shadow: 0 0 24px rgba(168,85,247,0.10); }
+.metric-card.sleep .metric-card__icon { background: rgba(168,85,247,0.15); color: var(--metric-sleep); }
+.metric-card.sleep .metric-card__title { color: var(--metric-sleep); }
+
+/* ---------- Heart ---------- */
+.metric-card.heart { border-top: 2px solid var(--metric-heart); }
+.metric-card.heart::before { background: var(--metric-heart); }
+.metric-card.heart:hover { border-color: var(--metric-heart); box-shadow: 0 0 24px rgba(239,68,102,0.10); }
+.metric-card.heart .metric-card__icon { background: rgba(239,68,102,0.15); color: var(--metric-heart); }
+.metric-card.heart .metric-card__title { color: var(--metric-heart); }
+
+/* ---------- Focus ---------- */
+.metric-card.focus { border-top: 2px solid var(--metric-focus); }
+.metric-card.focus::before { background: var(--metric-focus); }
+.metric-card.focus:hover { border-color: var(--metric-focus); box-shadow: 0 0 24px rgba(245,158,11,0.10); }
+.metric-card.focus .metric-card__icon { background: rgba(245,158,11,0.15); color: var(--metric-focus); }
+.metric-card.focus .metric-card__title { color: var(--metric-focus); }
+
+/* ---------- Balance ---------- */
+.metric-card.balance { border-top: 2px solid var(--metric-balance); }
+.metric-card.balance::before { background: var(--metric-balance); }
+.metric-card.balance:hover { border-color: var(--metric-balance); box-shadow: 0 0 24px rgba(6,182,212,0.10); }
+.metric-card.balance .metric-card__icon { background: rgba(6,182,212,0.15); color: var(--metric-balance); }
+.metric-card.balance .metric-card__title { color: var(--metric-balance); }
+
+/* ---------- Nutrition ---------- */
+.metric-card.nutrition { border-top: 2px solid var(--metric-nutrition); }
+.metric-card.nutrition::before { background: var(--metric-nutrition); }
+.metric-card.nutrition:hover { border-color: var(--metric-nutrition); box-shadow: 0 0 24px rgba(34,197,94,0.10); }
+.metric-card.nutrition .metric-card__icon { background: rgba(34,197,94,0.15); color: var(--metric-nutrition); }
+.metric-card.nutrition .metric-card__title { color: var(--metric-nutrition); }
+
+/* ---------- Strength ---------- */
+.metric-card.strength { border-top: 2px solid var(--metric-strength); }
+.metric-card.strength::before { background: var(--metric-strength); }
+.metric-card.strength:hover { border-color: var(--metric-strength); box-shadow: 0 0 24px rgba(218,7,4,0.12); }
+.metric-card.strength .metric-card__icon { background: rgba(218,7,4,0.15); color: var(--metric-strength); }
+.metric-card.strength .metric-card__title { color: var(--metric-strength); }
+
+/* ---------- Wellness ---------- */
+.metric-card.wellness { border-top: 2px solid var(--metric-wellness); }
+.metric-card.wellness::before { background: var(--metric-wellness); }
+.metric-card.wellness:hover { border-color: var(--metric-wellness); box-shadow: 0 0 24px rgba(139,92,246,0.10); }
+.metric-card.wellness .metric-card__icon { background: rgba(139,92,246,0.15); color: var(--metric-wellness); }
+.metric-card.wellness .metric-card__title { color: var(--metric-wellness); }
+
+/* ---------- Steps ---------- */
+.metric-card.steps { border-top: 2px solid var(--metric-steps); }
+.metric-card.steps::before { background: var(--metric-steps); }
+.metric-card.steps:hover { border-color: var(--metric-steps); box-shadow: 0 0 24px rgba(34,211,238,0.10); }
+.metric-card.steps .metric-card__icon { background: rgba(34,211,238,0.15); color: var(--metric-steps); }
+.metric-card.steps .metric-card__title { color: var(--metric-steps); }
+
+
+/* ================================================
+   2. STAT-BIG - Large number display
+   ================================================ */
+.stat-big {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stat-big__number {
+  font-family: var(--font-title);
+  font-size: var(--stat-lg);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.stat-big__number--xl {
+  font-size: var(--stat-xl);
+}
+
+.stat-big__number--md {
+  font-size: var(--stat-md);
+}
+
+.stat-big__unit {
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--muted);
+  margin-left: 4px;
+}
+
+.stat-big__label {
+  font-family: var(--font-title);
+  font-size: var(--label-sm);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+}
+
+
+/* ================================================
+   3. HERO COACH - AI assistant greeting
+   ================================================ */
+.hero-coach {
+  position: relative;
+  width: 100%;
+  min-height: 180px;
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 24px;
+  margin-bottom: 20px;
+  background:
+    linear-gradient(180deg,
+      rgba(0,0,0,0) 0%,
+      rgba(0,0,0,0.65) 50%,
+      rgba(0,0,0,0.92) 100%),
+    linear-gradient(135deg,
+      var(--mars-red-dark) 0%,
+      #000 60%);
+  background-size: cover;
+  background-position: center;
+}
+
+.hero-coach__greeting {
+  font-family: var(--font-title);
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.hero-coach__headline {
+  font-family: var(--font-title);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--text);
+  margin-bottom: 16px;
+}
+
+.hero-coach__headline em {
+  color: var(--mars-red);
+  font-style: normal;
+}
+
+.hero-coach__input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: var(--radius-pill);
+  padding: 10px 16px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: border-color var(--t-fast) ease;
+}
+
+.hero-coach__input:hover {
+  border-color: rgba(218,7,4,0.3);
+}
+
+.hero-coach__input-icon {
+  width: 20px;
+  height: 20px;
+  color: var(--mars-red);
+  flex-shrink: 0;
+}
+
+.hero-coach__input-text {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+}
+
+
+/* ================================================
+   4. COACH BANNER - Conversational nudges
+   ================================================ */
+.coach-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  background: var(--v2-surface-elevated);
+  border: 1px solid var(--v2-border);
+  border-left: 3px solid var(--mars-red);
+  border-radius: var(--radius-card);
+  padding: 16px 18px;
+  margin-bottom: 16px;
+  transition:
+    border-color var(--t-med) var(--ease-out-expo),
+    box-shadow var(--t-med) var(--ease-out-expo);
+}
+
+.coach-banner:hover {
+  border-color: rgba(218,7,4,0.3);
+  box-shadow: 0 0 20px rgba(218,7,4,0.06);
+}
+
+.coach-banner__avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-icon);
+  background: var(--grad-strength);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 18px;
+  color: #fff;
+}
+
+.coach-banner__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.coach-banner__name {
+  font-family: var(--font-title);
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.10em;
+  color: var(--mars-red);
+  margin-bottom: 4px;
+}
+
+.coach-banner__message {
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.45;
+  color: #c8c8c8;
+}
+
+.coach-banner__message strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.coach-banner__action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  background: rgba(218,7,4,0.12);
+  color: var(--mars-red);
+  font-family: var(--font-title);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.10em;
+  border: none;
+  cursor: pointer;
+  transition: background var(--t-fast) ease;
+}
+
+.coach-banner__action:hover {
+  background: rgba(218,7,4,0.22);
+}
+
+
+/* ================================================
+   5. CHART CONTAINERS - CSS pure structures
+   ================================================ */
+
+/* Bar chart wrapper */
+.bar-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 80px;
+  width: 100%;
+}
+
+.bar-chart__bar {
+  flex: 1;
+  border-radius: 3px 3px 0 0;
+  min-width: 4px;
+  transition: height var(--t-med) var(--ease-out-expo);
+}
+
+/* Wave line - container for SVG */
+.wave-line {
+  width: 100%;
+  height: 70px;
+  overflow: visible;
+}
+
+.wave-line svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Gauge semicircle */
+.gauge-semi {
+  position: relative;
+  width: 160px;
+  height: 90px;
+  margin: 0 auto;
+}
+
+.gauge-semi svg {
+  width: 100%;
+  height: 100%;
+}
+
+.gauge-semi__value {
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-title);
+  font-size: var(--stat-md);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text);
+}
+
+.gauge-semi__label {
+  position: absolute;
+  bottom: -16px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-title);
+  font-size: var(--label-sm);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* Sleep phases - 4 vertical bars */
+.sleep-phases {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  height: 80px;
+  width: 100%;
+}
+
+.sleep-phases__bar {
+  flex: 1;
+  border-radius: 6px 6px 3px 3px;
+  position: relative;
+  transition: height var(--t-med) var(--ease-out-expo);
+}
+
+.sleep-phases__bar--deep   { background: var(--sleep-deep); }
+.sleep-phases__bar--rem    { background: var(--sleep-rem); }
+.sleep-phases__bar--light  { background: var(--sleep-light); }
+.sleep-phases__bar--awake  { background: var(--sleep-awake); }
+
+.sleep-phases__label {
+  position: absolute;
+  bottom: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-title);
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* BPM bars - equalizer style */
+.bpm-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 60px;
+  width: 100%;
+}
+
+.bpm-bars__bar {
+  flex: 1;
+  min-width: 3px;
+  border-radius: 2px 2px 0 0;
+  transition: height var(--t-fast) ease;
+}
+
+
+/* ================================================
+   6. PILL RANGE & PILL ICON ROW
+   ================================================ */
+.pill-range {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  border-radius: var(--radius-pill);
+  background: var(--v2-surface-elevated);
+  border: 1px solid var(--v2-border);
+  font-family: var(--font-title);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: border-color var(--t-fast) ease, background var(--t-fast) ease;
+  user-select: none;
+}
+
+.pill-range:hover {
+  border-color: var(--v2-border-hover);
+  background: rgba(255,255,255,0.06);
+}
+
+.pill-range__icon {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.pill-range__chevron {
+  font-size: 10px;
+  color: var(--muted);
+  margin-left: 4px;
+}
+
+/* Pill icon row - colored icon pills above cards */
+.pill-icon-row {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 4px 0 12px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.pill-icon-row::-webkit-scrollbar { display: none; }
+
+.pill-icon-row__item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  background: var(--v2-surface-elevated);
+  border: 1px solid var(--v2-border);
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    border-color var(--t-fast) ease,
+    background var(--t-fast) ease;
+}
+
+.pill-icon-row__item:hover {
+  border-color: var(--v2-border-hover);
+}
+
+.pill-icon-row__item.active {
+  border-color: var(--mars-red);
+  background: rgba(218,7,4,0.08);
+}
+
+.pill-icon-row__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-icon);
+  flex-shrink: 0;
+}
+
+.pill-icon-row__label {
+  font-family: var(--font-title);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.pill-icon-row__item.active .pill-icon-row__label {
+  color: var(--text);
+}
+
+
+/* ================================================
+   7. V2 SECTION TITLE - "Pinned Stats" style
+   ================================================ */
+.v2-section-title {
+  font-family: var(--font-title);
+  font-size: 20px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text);
+  margin: 24px 0 14px;
+}
+
+.v2-section-title small {
+  display: block;
+  font-size: var(--label-sm);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+
+/* ================================================
+   8. V2 GRID - Metric card layout
+   ================================================ */
+.v2-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.v2-grid--2 { grid-template-columns: 1fr 1fr; }
+.v2-grid--1 { grid-template-columns: 1fr; }
+
+@media (max-width: 420px) {
+  .v2-grid--2 { grid-template-columns: 1fr; }
+}
+
+/* Full-width card override */
+.metric-card.full { grid-column: 1 / -1; }
+
+
+/* ================================================
+   9. V2 AVATAR ROW
+   ================================================ */
+.v2-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-icon);
+  border: 2px solid var(--v2-border);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.v2-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+
+/* ================================================
+   10. TIMESTAMP BADGE
+   ================================================ */
+.time-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-body);
+  font-size: var(--label-sm);
+  color: var(--muted);
+  letter-spacing: 0.04em;
+}
+
+.time-badge__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-icon);
+  background: var(--ok);
+  animation: pulse-dot 2s infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.4; }
+}
+
+
+/* ================================================
+   11. V2 BUTTONS - Rounded variants
+   ================================================ */
+.btn-v2 {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 22px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--v2-border);
+  background: var(--v2-surface-elevated);
+  color: var(--text);
+  font-family: var(--font-title);
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition:
+    background var(--t-fast) ease,
+    border-color var(--t-fast) ease,
+    transform var(--t-fast) ease;
+}
+
+.btn-v2:hover {
+  background: rgba(255,255,255,0.08);
+  border-color: var(--v2-border-hover);
+}
+
+.btn-v2:active {
+  transform: scale(0.97);
+}
+
+.btn-v2.primary {
+  background: var(--mars-red);
+  border-color: var(--mars-red);
+  color: #fff;
+}
+
+.btn-v2.primary:hover {
+  background: var(--mars-red-dark);
+  border-color: var(--mars-red-dark);
+}
+
+
+/* ================================================
+   12. MICRO-INTERACTIONS & ANIMATIONS
+   ================================================ */
+
+/* Card entrance */
+@keyframes v2-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.metric-card.animate-in {
+  animation: v2-fade-up var(--t-slow) var(--ease-out-expo) both;
+}
+
+/* Stagger children */
+.v2-grid > .metric-card:nth-child(1) { animation-delay: 0ms; }
+.v2-grid > .metric-card:nth-child(2) { animation-delay: 60ms; }
+.v2-grid > .metric-card:nth-child(3) { animation-delay: 120ms; }
+.v2-grid > .metric-card:nth-child(4) { animation-delay: 180ms; }
+.v2-grid > .metric-card:nth-child(5) { animation-delay: 240ms; }
+.v2-grid > .metric-card:nth-child(6) { animation-delay: 300ms; }
+
+/* Gauge animation */
+@keyframes gauge-fill {
+  from { stroke-dashoffset: 251.2; }
+}
+
+/* Bar grow animation */
+@keyframes bar-grow {
+  from { transform: scaleY(0); }
+  to   { transform: scaleY(1); }
+}
+
+.bar-chart__bar,
+.sleep-phases__bar,
+.bpm-bars__bar {
+  transform-origin: bottom;
+  animation: bar-grow var(--t-slow) var(--ease-out-expo) both;
+}
+
+/* Wave draw animation */
+@keyframes wave-draw {
+  from { stroke-dashoffset: 600; }
+  to   { stroke-dashoffset: 0; }
+}
