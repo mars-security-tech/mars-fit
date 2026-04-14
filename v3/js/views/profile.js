@@ -17,10 +17,10 @@ import {
   getWeightHistory,
   resetAll,
 } from '../store-v3.js';
-import { getApiKey, setApiKey } from '../../../js/ai.js';
-import { importHealthExport } from '../../../js/applehealth.js';
-import { pushSupported, subscribe as pushSubscribe, unsubscribe as pushUnsubscribe } from '../../../js/push.js';
-import { backendConfig, setBackendConfig } from '../../../js/backend.js';
+import { getApiKey, setApiKey } from '../ai-legacy.js';
+import { importHealthExport } from '../applehealth-legacy.js';
+import { pushSupported, subscribe as pushSubscribe, unsubscribe as pushUnsubscribe } from '../push-legacy.js';
+import { backendConfig, setBackendConfig } from '../backend-legacy.js';
 
 // ============================================================
 // HELPERS

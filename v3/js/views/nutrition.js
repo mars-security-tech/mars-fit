@@ -13,10 +13,10 @@
 
 import { icon } from '../icons.js';
 import { renderDonut, renderBarChart, renderRingProgress, animateCounter } from '../charts-v3.js';
-import { getState, setState, subscribe, computeMacros, today } from '../../../js/store.js';
-import { DIETS } from '../../../data/diets.js';
-import { analyzeMealPhoto } from '../../../js/ai.js';
-import { buildShoppingList } from '../../../js/shopping.js';
+import { getState, setState, subscribe, computeMacros, today } from '../store-legacy.js';
+import { DIETS } from '../../data-legacy/diets.js';
+import { analyzeMealPhoto } from '../ai-legacy.js';
+import { buildShoppingList } from '../shopping-legacy.js';
 
 /* ── Helpers ──────────────────────────────────────────────── */
 

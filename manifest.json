@@ -1,0 +1,17 @@
+{
+  "name": "MĀRS FIT · Entrenamiento & Nutrición",
+  "short_name": "MĀRS FIT",
+  "description": "App de entrenamiento, musculación y nutrición con escuadrones sociales. Versión civil y modo operativo para personal MARS Seguridad.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "lang": "es",
+  "icons": [
+    { "src": "icons/icon.png", "sizes": "822x1084", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ],
+  "categories": ["health", "fitness", "lifestyle"]
+}

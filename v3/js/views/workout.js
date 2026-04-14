@@ -18,10 +18,10 @@
 
 import { icon } from '../icons.js';
 import { renderRingProgress } from '../charts-v3.js';
-import { ExerciseAnim } from '../../../js/anim3d.js';
-import { getState, setState, today } from '../../../js/store.js';
-import { EXERCISES, MUSCLES } from '../../../data/exercises.js';
-import { ROUTINES } from '../../../data/routines.js';
+import { ExerciseAnim } from '../anim3d.js';
+import { getState, setState, today } from '../store-legacy.js';
+import { EXERCISES, MUSCLES } from '../../data-legacy/exercises.js';
+import { ROUTINES } from '../../data-legacy/routines.js';
 
 // ============================================================
 // HELPERS

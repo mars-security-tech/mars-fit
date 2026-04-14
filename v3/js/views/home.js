@@ -16,9 +16,9 @@ import {
   renderRadar,
   animateCounter,
 } from '../charts-v3.js';
-import { getState, computeTDEE, computeMacros, today } from '../../../js/store.js';
-import { DIETS } from '../../../data/diets.js';
-import { ROUTINES } from '../../../data/routines.js';
+import { getState, computeTDEE, computeMacros, today } from '../store-legacy.js';
+import { DIETS } from '../../data-legacy/diets.js';
+import { ROUTINES } from '../../data-legacy/routines.js';
 import { computeXP, renderLevelBar, getLatestBadge } from '../badges.js';
 import { getSession } from '../auth.js';
 
