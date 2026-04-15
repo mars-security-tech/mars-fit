@@ -104,7 +104,7 @@ export function render(container, ctx) {
           </div>
 
           <button type="submit" class="btn btn--primary btn--lg w-full btn--pill">
-            ${icon('log-in', 18)} LOGIN
+            ${icon('log-in', 18)} INICIAR SESION
           </button>
         </div>
       </form>
@@ -283,7 +283,7 @@ export function render(container, ctx) {
   const styleEl = document.createElement('style');
   styleEl.textContent = `
     /* --- Hidden utility (scoped) --- */
-    .hidden { display: none !important; }
+    .login-view .hidden { display: none !important; }
 
     /* --- Layout --- */
     .login-view {
@@ -373,7 +373,7 @@ export function render(container, ctx) {
       animation: fadeSlideIn 300ms var(--ease-out-expo) both;
     }
 
-    .login-view__error.hidden {
+    .login-view .login-view__error.hidden {
       display: none !important;
     }
 
@@ -393,7 +393,7 @@ export function render(container, ctx) {
       animation: fadeSlideIn 400ms var(--ease-out-expo) both;
     }
 
-    .login-view__pending.hidden {
+    .login-view .login-view__pending.hidden {
       display: none !important;
     }
 
@@ -471,7 +471,7 @@ export function render(container, ctx) {
     }
 
     /* Flex utilities for form (in case design system doesn't have flex-col gap) */
-    .flex.flex-col { display: flex; flex-direction: column; }
+    .login-view .flex.flex-col { display: flex; flex-direction: column; }
   `;
   document.head.appendChild(styleEl);
 

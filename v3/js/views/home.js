@@ -17,12 +17,19 @@ import {
   animateCounter,
 } from '../charts-v3.js';
 import { getState, computeTDEE, computeMacros, today } from '../store-legacy.js';
-import { DIETS } from '../../data-legacy/diets.js';
-import { ROUTINES } from '../../data-legacy/routines.js';
+import { DIETS } from '../../data/diets-v3.js';
+import { ROUTINES } from '../../data/routines-v3.js';
 import { computeXP, renderLevelBar, getLatestBadge } from '../badges.js';
 import { getSession } from '../auth.js';
 
 /* ─── Helpers ──────────────────────────────────────────────── */
+
+/** Basic HTML escape for user-derived strings */
+function escapeHtml(str) {
+  const d = document.createElement('div');
+  d.textContent = str ?? '';
+  return d.innerHTML;
+}
 
 /** Greeting based on hour of day */
 function greeting() {
@@ -269,24 +276,15 @@ export function render(container, ctx) {
             <div>
               <p class="text-sm text-secondary uppercase tracking" style="margin-bottom:var(--space-1);">${greeting()}</p>
               <h2 class="hero-gradient__title" style="font-size:var(--text-3xl);margin:0;">
-                ${(getSession()?.name || profile.name || 'Espartano').toUpperCase()}
+                ${escapeHtml((getSession()?.name || profile.name || 'Espartano').toUpperCase())}
               </h2>
             </div>
             <div id="home-wellness-ring" style="flex-shrink:0;"></div>
           </div>
           <div class="flex items-center gap-3 mt-4">
-            <div style="position:relative;flex:1;">
-              <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-tertiary);pointer-events:none;">
-                ${icon('search', 18)}
-              </span>
-              <input
-                type="text"
-                class="input"
-                placeholder="Escribe tu pregunta..."
-                style="padding-left:40px;background:var(--bg-surface-raised);border-color:var(--border-subtle);"
-                id="home-search"
-                readonly
-              />
+            <div style="flex:1;padding:var(--space-3) var(--space-4);background:var(--bg-surface-raised);border-radius:var(--radius-md);border:1px solid var(--border-subtle);display:flex;align-items:center;gap:var(--space-2);color:var(--text-tertiary);opacity:0.7;">
+              ${icon('zap', 16)}
+              <span style="font-size:var(--text-sm);">Proximamente: Coach IA</span>
             </div>
           </div>
         </div>
@@ -305,7 +303,7 @@ export function render(container, ctx) {
           </div>
           <div style="flex:1;min-width:0;">
             <p class="text-xs text-mars uppercase tracking" style="margin-bottom:var(--space-1);font-weight:600;font-family:var(--font-display);">Coach MARS</p>
-            <p class="text-sm" style="color:var(--text-secondary);line-height:1.4;margin-bottom:var(--space-3);">${coach.text}</p>
+            <p class="text-sm" style="color:var(--text-secondary);line-height:1.4;margin-bottom:var(--space-3);">${escapeHtml(coach.text)}</p>
             <button class="btn btn--primary btn--sm btn--pill" id="home-coach-btn">
               ${coach.action}
             </button>
@@ -415,6 +413,14 @@ export function render(container, ctx) {
           <button class="btn btn--primary btn--sm w-full" id="btn-go-workout" style="margin-top:var(--space-3);">
             ${icon('dumbbell', 16)} IR AL ENTRENO
           </button>
+          <div class="flex gap-2" style="margin-top:var(--space-2);">
+            <button class="btn btn--ghost btn--sm" id="btn-go-workout-log" style="flex:1;font-size:11px;">
+              ${icon('chart', 12)} HISTORIAL
+            </button>
+            <button class="btn btn--ghost btn--sm" id="btn-go-exercise-lib" style="flex:1;font-size:11px;">
+              ${icon('search', 12)} EJERCICIOS
+            </button>
+          </div>
         </div>
 
         <!-- BALANCE -->
@@ -659,6 +665,23 @@ export function render(container, ctx) {
     navigate('/workout');
   });
 
+  // Strength card -> exercise library (click on the card itself)
+  addClick('#card-strength', (e) => {
+    if (!e.target.closest('button')) navigate('/exercise-library');
+  });
+
+  // Go to workout log
+  addClick('#btn-go-workout-log', (e) => {
+    e.stopPropagation();
+    navigate('/workout-log');
+  });
+
+  // Go to exercise library
+  addClick('#btn-go-exercise-lib', (e) => {
+    e.stopPropagation();
+    navigate('/exercise-library');
+  });
+
   // Squad button
   addClick('#btn-squad', () => navigate('/circle'));
 
@@ -666,17 +689,6 @@ export function render(container, ctx) {
   addClick('#btn-connect-activity', () => navigate('/profile'));
   addClick('#btn-connect-sleep', () => navigate('/profile'));
   addClick('#btn-connect-heart', () => navigate('/profile'));
-
-  // Search input focus -> could navigate to AI chat or just be decorative
-  const searchInput = container.querySelector('#home-search');
-  if (searchInput) {
-    const searchHandler = () => {
-      // Future: navigate to AI chat. For now, visual feedback only.
-      searchInput.blur();
-    };
-    searchInput.addEventListener('focus', searchHandler);
-    handlers.push(() => searchInput.removeEventListener('focus', searchHandler));
-  }
 
   /* ─── Cleanup ──────────────────────────────────────────────── */
 
@@ -707,25 +719,13 @@ function renderFeedItem(item, members) {
       <div class="avatar avatar--sm avatar--ring">${initials}</div>
       <div style="flex:1;min-width:0;">
         <div class="flex items-center gap-2">
-          <span class="text-sm" style="font-weight:600;color:var(--text-primary);">${name}</span>
+          <span class="text-sm" style="font-weight:600;color:var(--text-primary);">${escapeHtml(name)}</span>
           ${kindBadge}
         </div>
-        <p class="text-xs text-secondary truncate">${item.text || ''}</p>
+        <p class="text-xs text-secondary truncate">${escapeHtml(item.text || '')}</p>
       </div>
       <span class="text-xs text-tertiary" style="flex-shrink:0;">${item.time || ''}</span>
     </div>
   `;
 }
 
-/** Sleep placeholder bars when no data */
-function renderSleepPlaceholder() {
-  return `
-    <div class="flex items-end gap-2" style="height:60px;padding:var(--space-2) 0;">
-      <div style="flex:1;height:40%;background:rgba(139,92,246,0.08);border-radius:4px;"></div>
-      <div style="flex:1;height:70%;background:rgba(139,92,246,0.06);border-radius:4px;"></div>
-      <div style="flex:1;height:50%;background:rgba(139,92,246,0.05);border-radius:4px;"></div>
-      <div style="flex:1;height:30%;background:rgba(139,92,246,0.04);border-radius:4px;"></div>
-    </div>
-    <p class="text-xs text-tertiary" style="margin-top:var(--space-2);">Importa datos de Apple Health</p>
-  `;
-}

@@ -18,6 +18,9 @@
   --mars-red-light:    #FF3B38;
   --mars-red-glow:     rgba(218, 7, 4, 0.5);
 
+  /* Link color — use for text links instead of --mars-red for contrast */
+  --link-color:        #FF3B38;
+
   /* ─── Semantic / Metric Colors — VIBRANTES ────────────────── */
   --color-activity:    #FF6B2C;   /* naranja fuego */
   --color-sleep:       #B44AFF;   /* violeta electrico */
@@ -34,7 +37,7 @@
   --color-info:        #448AFF;
 
   /* ─── Dark Theme (default) ────────────────────────────────── */
-  --bg-base:           #000000;
+  --bg-base:           #050508;
   --bg-surface:        #0A0A0F;
   --bg-surface-raised: #111118;
   --bg-surface-overlay:#16161F;
@@ -42,8 +45,8 @@
 
   --text-primary:      #FFFFFF;
   --text-secondary:    rgba(255, 255, 255, 0.70);
-  --text-tertiary:     rgba(255, 255, 255, 0.45);
-  --text-disabled:     rgba(255, 255, 255, 0.24);
+  --text-tertiary:     rgba(255, 255, 255, 0.62);
+  --text-disabled:     rgba(255, 255, 255, 0.40);
 
   --border-default:    rgba(255, 255, 255, 0.08);
   --border-subtle:     rgba(255, 255, 255, 0.04);
@@ -66,7 +69,7 @@
   --text-4xl:          2.5rem;      /* 40px */
   --text-5xl:          3.5rem;      /* 56px */
 
-  --leading-tight:     1.1;
+  --leading-tight:     1.2;
   --leading-snug:      1.25;
   --leading-normal:    1.5;
   --leading-relaxed:   1.625;
@@ -186,9 +189,9 @@
   --bg-card:           #FFFFFF;
 
   --text-primary:      #111111;
-  --text-secondary:    rgba(0, 0, 0, 0.65);
-  --text-tertiary:     rgba(0, 0, 0, 0.42);
-  --text-disabled:     rgba(0, 0, 0, 0.24);
+  --text-secondary:    #374151;
+  --text-tertiary:     #4B5563;
+  --text-disabled:     #9CA3AF;
 
   --border-default:    rgba(0, 0, 0, 0.10);
   --border-subtle:     rgba(0, 0, 0, 0.05);
@@ -237,6 +240,7 @@
 
   /* Additional Light-Specific Tokens */
   --bg-surface-card:   #FFFFFF;
+  --link-color:        #C62828;
 
   --glow-activity:     0 2px 12px rgba(230, 81, 0, 0.12),   0 0 0 1px rgba(230, 81, 0, 0.08);
   --glow-sleep:        0 2px 12px rgba(156, 39, 176, 0.12),  0 0 0 1px rgba(156, 39, 176, 0.08);
@@ -253,7 +257,7 @@
 [data-theme="light"] .card-glow {
   background: #FFFFFF;
   border: 1px solid #E5E7EB;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 4px 16px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 4px 16px rgba(0, 0, 0, 0.04);
 }
 [data-theme="light"] .card-glow::before {
   background: radial-gradient(ellipse at 20% 20%, rgba(0, 0, 0, 0.01) 0%, transparent 60%);
@@ -423,7 +427,7 @@ h5 { font-size: var(--text-lg); }
 h6 { font-size: var(--text-base); }
 
 a {
-  color: var(--mars-red);
+  color: var(--link-color);
   text-decoration: none;
   transition: var(--transition-fast);
 }
@@ -682,6 +686,16 @@ a:hover { color: var(--mars-red-light); }
 .metric-card--balance   { --metric-color: var(--color-balance);    --metric-color-rgb: 124, 77, 255;  --glow-color: rgba(124, 77, 255, 0.15); }
 .metric-card--steps     { --metric-color: var(--color-steps);      --metric-color-rgb: 255, 214, 0;   --glow-color: rgba(255, 214, 0, 0.15); }
 
+/* Light theme: adjusted RGB values for better contrast on white */
+[data-theme="light"] .metric-card--activity  { --metric-color-rgb: 230, 81, 0; }
+[data-theme="light"] .metric-card--sleep     { --metric-color-rgb: 156, 39, 176; }
+[data-theme="light"] .metric-card--heart     { --metric-color-rgb: 233, 30, 99; }
+[data-theme="light"] .metric-card--nutrition { --metric-color-rgb: 0, 200, 83; }
+[data-theme="light"] .metric-card--strength  { --metric-color-rgb: 213, 0, 0; }
+[data-theme="light"] .metric-card--wellness  { --metric-color-rgb: 0, 172, 193; }
+[data-theme="light"] .metric-card--balance   { --metric-color-rgb: 101, 31, 255; }
+[data-theme="light"] .metric-card--steps     { --metric-color-rgb: 249, 168, 37; }
+
 
 /* ============================================================
    5. STAT NUMBER — LUMINOUS
@@ -786,6 +800,7 @@ a:hover { color: var(--mars-red-light); }
   transition: all 0.15s ease;
   cursor: default;
   user-select: none;
+  min-height: 36px;
 }
 
 .chip--active {
@@ -1026,7 +1041,7 @@ a:hover { color: var(--mars-red-light); }
   border-radius: var(--radius-full);
 }
 
-.btn--icon.btn--sm  { width: 32px; height: 32px; }
+.btn--icon.btn--sm  { width: 32px; height: 32px; min-height: 44px; min-width: 44px; }
 .btn--icon.btn--lg  { width: 48px; height: 48px; }
 
 /* Pill */
@@ -1462,16 +1477,20 @@ a:hover { color: var(--mars-red-light); }
   align-items: center;
   gap: 4px;
   padding: var(--space-2);
-  color: var(--text-tertiary);
+  background: transparent;
+  border: 0;
+  color: var(--text-secondary);
   text-decoration: none;
   font-family: var(--font-body);
-  font-size: 10px;
+  font-size: var(--text-xs);
   font-weight: var(--weight-semibold);
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  transition: all 0.15s ease;
+  transition: color 0.15s ease, filter 0.15s ease;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+  min-width: 44px;
+  min-height: 44px;
 }
 
 .tabbar__item:hover {
@@ -1995,6 +2014,10 @@ a:hover { color: var(--mars-red-light); }
   outline-offset: 2px;
 }
 
+[data-theme="light"] *:focus-visible {
+  outline: 2px solid #B00503;
+}
+
 :focus:not(:focus-visible) {
   outline: none;
 }
@@ -2029,7 +2052,16 @@ a:active {
   *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
+  }
+  /* Zero out motion-heavy transitions but preserve outline/box-shadow for focus rings */
+  *:not(:focus-visible),
+  *:not(:focus-visible)::before,
+  *:not(:focus-visible)::after {
+    transition-property: color, background-color, border-color, opacity !important;
     transition-duration: 0.01ms !important;
+  }
+  .hero-gradient {
+    animation: none;
   }
 }
 
@@ -2077,3 +2109,123 @@ a:active {
     padding-bottom: var(--space-8);
   }
 }
+
+/* ============================================================
+   LIGHT-THEME CRITICAL OVERRIDES — appended to respect WCAG AA
+   (ring values, metric cards, text-mars links, hero copy)
+   ============================================================ */
+
+[data-theme="light"] .mars-ring-value {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="light"] .mars-ring-value + span,
+[data-theme="light"] .mars-ring-label {
+  color: var(--text-secondary) !important;
+  opacity: 1 !important;
+}
+
+[data-theme="light"] .hero-gradient,
+[data-theme="light"] .hero-gradient__content {
+  color: var(--text-primary);
+}
+
+[data-theme="light"] .hero-gradient__title {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="light"] .stat-number,
+[data-theme="light"] .metric-card__value {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="light"] .text-mars {
+  color: #B00503 !important;
+}
+
+[data-theme="light"] a {
+  color: #B00503;
+}
+
+
+/* ============================================================
+   UTILITY CLASSES — semantic color helpers
+   ============================================================ */
+
+.text-nutrition { color: var(--color-nutrition); }
+.text-steps     { color: var(--color-steps); }
+.text-sleep     { color: var(--color-sleep); }
+.text-link      { color: var(--link-color); }
+
+/* ─── Skip Link (a11y) ─────────────────────────────────────── */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+}
+.skip-link:focus {
+  left: 12px;
+  top: 12px;
+  background: var(--mars-red);
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 8px;
+  z-index: 9999;
+}
+
+
+/* ============================================================
+   WOW-FACTOR ANIMATIONS
+   ============================================================ */
+
+/* Profile avatar ring rotation */
+@keyframes ringRotate {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Set completion pop */
+@keyframes setCompletePop {
+  0%   { transform: scale(1); filter: brightness(1); }
+  50%  { transform: scale(1.15); filter: brightness(1.3); }
+  100% { transform: scale(1); filter: brightness(1); }
+}
+
+.set-row--just-completed {
+  animation: setCompletePop 0.4s var(--ease-out-back);
+}
+
+/* Confetti burst — CSS-only */
+.confetti-burst {
+  position: relative;
+  display: inline-block;
+}
+.confetti-burst::before,
+.confetti-burst::after {
+  content: '';
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  opacity: 0;
+  pointer-events: none;
+}
+.confetti-burst::before {
+  background: var(--mars-red);
+  animation: confettiBit1 0.3s ease-out forwards;
+}
+.confetti-burst::after {
+  background: var(--color-steps);
+  animation: confettiBit2 0.3s ease-out forwards;
+}
+
+@keyframes confettiBit1 {
+  0%   { transform: translate(-50%, -50%) scale(0); opacity: 1; }
+  100% { transform: translate(-200%, -300%) scale(1.5); opacity: 0; }
+}
+@keyframes confettiBit2 {
+  0%   { transform: translate(-50%, -50%) scale(0); opacity: 1; }
+  100% { transform: translate(200%, -250%) scale(1.2); opacity: 0; }
+}
+

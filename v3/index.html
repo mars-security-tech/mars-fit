@@ -27,6 +27,7 @@
   </script>
 </head>
 <body>
+  <a href="#app" class="skip-link">Saltar al contenido principal</a>
 
   <!-- ============================================================
        TOPBAR — Glassmorphism header
@@ -48,13 +49,15 @@
   <!-- ============================================================
        APP CONTAINER — Vistas se montan aqui
        ============================================================ -->
-  <main id="app"></main>
+  <main id="app">
+    <noscript>Esta app requiere JavaScript activado.</noscript>
+  </main>
 
   <!-- ============================================================
        TABBAR — Navegacion inferior 5 tabs
        ============================================================ -->
   <nav id="tabbar" class="tabbar hidden" aria-label="Navegacion principal">
-    <button data-route="/home" class="tabbar__item" aria-label="Dashboard">
+    <button data-route="/home" class="tabbar__item" aria-label="Inicio">
       <span class="tabbar__icon"></span>
       <span>HOY</span>
     </button>
@@ -66,7 +69,7 @@
       <span class="tabbar__icon"></span>
       <span>DIETA</span>
     </button>
-    <button data-route="/circle" class="tabbar__item" aria-label="Team">
+    <button data-route="/circle" class="tabbar__item" aria-label="Equipo">
       <span class="tabbar__icon"></span>
       <span>TEAM</span>
     </button>
@@ -76,6 +79,7 @@
     </button>
   </nav>
 
+  <div id="toast" aria-live="polite" aria-atomic="true"></div>
   <script type="module" src="js/app-v3.js"></script>
 </body>
 </html>

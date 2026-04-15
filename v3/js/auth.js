@@ -9,12 +9,21 @@
 const USERS_KEY = 'marsfit_users';
 const SESSION_KEY = 'marsfit_session';
 
+/** Session lifetime: 90 days in milliseconds */
+const SESSION_TTL_MS = 90 * 24 * 60 * 60 * 1000;
+
+/**
+ * Admin identity — password is NOT stored here.
+ * The hash is computed at seed time from the module-private constant below.
+ */
 const ADMIN = {
   email: 'v.guillen@mars-seguridad.com',
-  password: 'Bellona1313!MF',
   name: 'Vin',
   isAdmin: true,
 };
+
+/** Module-private: used only in ensureAdmin to seed the password hash */
+const _ADMIN_PW = 'Bellona1313!MF';
 
 // ============================================================
 // HASH SIMPLE (MVP — no bcrypt)
@@ -47,7 +56,7 @@ function ensureAdmin() {
     users.push({
       email: ADMIN.email,
       name: ADMIN.name,
-      passwordHash: simpleHash(ADMIN.password),
+      passwordHash: simpleHash(_ADMIN_PW),
       isAdmin: true,
       approved: true,
       createdAt: new Date().toISOString(),
@@ -98,12 +107,21 @@ export function getUsers() {
   }
 }
 
-/** Obtener sesion activa */
+/** Obtener sesion activa (returns null if expired) */
 export function getSession() {
   try {
     const raw = localStorage.getItem(SESSION_KEY);
     if (!raw) return null;
-    return JSON.parse(raw);
+    const session = JSON.parse(raw);
+
+    // Check expiry
+    if (session.expiresAt && Date.now() > session.expiresAt) {
+      // Session expired — clear it
+      _saveSession(null);
+      return null;
+    }
+
+    return session;
   } catch {
     return null;
   }
@@ -127,18 +145,23 @@ export function login(email, password) {
     return { ok: false, error: 'Tu cuenta esta pendiente de aprobacion por el administrador.' };
   }
 
+  const now = Date.now();
   const session = {
     email: user.email,
     name: user.name,
     isAdmin: !!user.isAdmin,
+    createdAt: now,
+    expiresAt: now + SESSION_TTL_MS,
   };
   _saveSession(session);
   return { ok: true, user: session };
 }
 
-/** Logout: borra sesion */
+/** Logout: borra sesion and theme override */
 export function logout() {
   _saveSession(null);
+  // Clear theme override so next user gets default
+  try { localStorage.removeItem('marsfit.theme'); } catch { /* ignore */ }
 }
 
 /** Registro: crea usuario con approved=false */
@@ -172,10 +195,18 @@ export function register(email, password, name) {
   return { ok: true, user: newUser };
 }
 
-/** Es admin el usuario logueado? */
+/**
+ * Es admin el usuario logueado?
+ * Cross-references session against users array for integrity.
+ */
 export function isAdmin() {
   const session = getSession();
-  return !!(session && session.isAdmin);
+  if (!session || !session.isAdmin) return false;
+
+  // Integrity check: verify against users store
+  const users = getUsers();
+  const user = users.find(u => u.email.toLowerCase() === session.email.toLowerCase());
+  return !!(user && user.isAdmin);
 }
 
 /** Hay sesion activa? */

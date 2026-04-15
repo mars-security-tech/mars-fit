@@ -181,7 +181,14 @@ async function idbTransaction(storeName, mode, callback) {
   return new Promise((resolve, reject) => {
     const tx = db.transaction(storeName, mode);
     const store = tx.objectStore(storeName);
-    const result = callback(store);
+
+    let result;
+    try {
+      result = callback(store);
+    } catch (err) {
+      reject(err);
+      return;
+    }
 
     if (result && typeof result.onsuccess !== 'undefined') {
       result.onsuccess = () => resolve(result.result);
@@ -395,10 +402,10 @@ export function getConfig() {
   return _config;
 }
 
-/** Actualizar config (merge parcial) */
+/** Actualizar config (deep merge parcial) */
 export function setConfig(partial) {
   const changedKeys = Object.keys(partial);
-  _config = { ..._config, ...partial };
+  _config = deepMerge(structuredClone(_config), partial);
   saveConfig(_config);
   emit(changedKeys);
 }
@@ -415,14 +422,23 @@ export async function resetAll() {
   localStorage.removeItem(LS_KEY);
   _config = structuredClone(defaultConfig);
 
-  // Borrar IndexedDB
+  // Borrar IndexedDB — await each transaction completion
   const db = await openDB();
+  const clearPromises = [];
   for (const storeName of Object.values(IDB_STORES)) {
-    try {
-      const tx = db.transaction(storeName, 'readwrite');
-      tx.objectStore(storeName).clear();
-    } catch (e) { /* store puede no existir */ }
+    clearPromises.push(new Promise((resolve, reject) => {
+      try {
+        const tx = db.transaction(storeName, 'readwrite');
+        tx.objectStore(storeName).clear();
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      } catch (e) {
+        // store may not exist
+        resolve();
+      }
+    }));
   }
+  await Promise.all(clearPromises);
 
   emit(['*']);
 }

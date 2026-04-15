@@ -16,6 +16,12 @@ import {
   computeTDEE,
   getWeightHistory,
   resetAll,
+  saveWeight,
+  saveHealthData,
+  getAllWorkouts,
+  getMealsInRange,
+  getCustomRoutines,
+  getCustomDiets,
 } from '../store-v3.js';
 import { getApiKey, setApiKey } from '../ai-legacy.js';
 import { importHealthExport } from '../applehealth-legacy.js';
@@ -185,15 +191,23 @@ export function render(container, ctx) {
                 <input class="input" id="pf-age" name="age" type="number" min="14" max="99" value="${profile.age || 30}" style="transition:box-shadow 0.2s ease,border-color 0.2s ease;" onfocus="this.style.boxShadow='0 0 0 3px rgba(218,7,4,0.2),0 0 12px rgba(218,7,4,0.1)';this.style.borderColor='var(--mars-red)';" onblur="this.style.boxShadow='none';this.style.borderColor='';" />
               </div>
             </div>
+            <!-- Units preference -->
+            <div>
+              <label class="input-label" for="pf-units" style="text-transform:uppercase;letter-spacing:0.06em;font-size:var(--text-xs);font-weight:var(--weight-semibold);">Unidades</label>
+              <select class="input" id="pf-units" name="units" style="transition:box-shadow 0.2s ease,border-color 0.2s ease;" onfocus="this.style.boxShadow='0 0 0 3px rgba(218,7,4,0.2),0 0 12px rgba(218,7,4,0.1)';this.style.borderColor='var(--mars-red)';" onblur="this.style.boxShadow='none';this.style.borderColor='';">
+                <option value="metric" ${(profile.units || 'metric') === 'metric' ? 'selected' : ''}>Metrico (kg / cm)</option>
+                <option value="imperial" ${profile.units === 'imperial' ? 'selected' : ''}>Imperial (lbs / in)</option>
+              </select>
+            </div>
             <!-- Weight + Height -->
             <div class="grid grid-cols-2 gap-3">
               <div>
-                <label class="input-label" for="pf-weight" style="text-transform:uppercase;letter-spacing:0.06em;font-size:var(--text-xs);font-weight:var(--weight-semibold);">Peso (kg)</label>
-                <input class="input" id="pf-weight" name="weightKg" type="number" min="30" max="250" step="0.1" value="${profile.weightKg || 80}" style="transition:box-shadow 0.2s ease,border-color 0.2s ease;" onfocus="this.style.boxShadow='0 0 0 3px rgba(218,7,4,0.2),0 0 12px rgba(218,7,4,0.1)';this.style.borderColor='var(--mars-red)';" onblur="this.style.boxShadow='none';this.style.borderColor='';" />
+                <label class="input-label" for="pf-weight" style="text-transform:uppercase;letter-spacing:0.06em;font-size:var(--text-xs);font-weight:var(--weight-semibold);">Peso (${(profile.units === 'imperial') ? 'lbs' : 'kg'})</label>
+                <input class="input" id="pf-weight" name="weightKg" type="number" min="30" max="550" step="0.1" value="${(profile.units === 'imperial') ? Math.round((profile.weightKg || 80) * 2.20462 * 10) / 10 : (profile.weightKg || 80)}" style="transition:box-shadow 0.2s ease,border-color 0.2s ease;" onfocus="this.style.boxShadow='0 0 0 3px rgba(218,7,4,0.2),0 0 12px rgba(218,7,4,0.1)';this.style.borderColor='var(--mars-red)';" onblur="this.style.boxShadow='none';this.style.borderColor='';" />
               </div>
               <div>
-                <label class="input-label" for="pf-height" style="text-transform:uppercase;letter-spacing:0.06em;font-size:var(--text-xs);font-weight:var(--weight-semibold);">Altura (cm)</label>
-                <input class="input" id="pf-height" name="heightCm" type="number" min="100" max="250" value="${profile.heightCm || 178}" style="transition:box-shadow 0.2s ease,border-color 0.2s ease;" onfocus="this.style.boxShadow='0 0 0 3px rgba(218,7,4,0.2),0 0 12px rgba(218,7,4,0.1)';this.style.borderColor='var(--mars-red)';" onblur="this.style.boxShadow='none';this.style.borderColor='';" />
+                <label class="input-label" for="pf-height" style="text-transform:uppercase;letter-spacing:0.06em;font-size:var(--text-xs);font-weight:var(--weight-semibold);">Altura (${(profile.units === 'imperial') ? 'in' : 'cm'})</label>
+                <input class="input" id="pf-height" name="heightCm" type="number" min="39" max="99" value="${(profile.units === 'imperial') ? Math.round((profile.heightCm || 178) / 2.54 * 10) / 10 : (profile.heightCm || 178)}" style="transition:box-shadow 0.2s ease,border-color 0.2s ease;" onfocus="this.style.boxShadow='0 0 0 3px rgba(218,7,4,0.2),0 0 12px rgba(218,7,4,0.1)';this.style.borderColor='var(--mars-red)';" onblur="this.style.boxShadow='none';this.style.borderColor='';" />
               </div>
             </div>
             <!-- Activity -->
@@ -247,16 +261,36 @@ export function render(container, ctx) {
         </div>
 
         <div data-panel="health" class="mt-4" style="display:none;">
-          <label class="input-label" for="int-health-file" style="text-transform:uppercase;letter-spacing:0.06em;font-size:var(--text-xs);font-weight:var(--weight-semibold);">Importar Apple Health (export.xml o .zip)</label>
+          <div style="background:rgba(255,45,107,0.06);border:1px solid rgba(255,45,107,0.15);border-radius:12px;padding:12px;margin-bottom:12px;">
+            <p style="color:var(--text-primary);font-weight:600;margin-bottom:4px;font-size:13px;">${icon('heart-pulse',14)} Como importar datos de Apple Health:</p>
+            <ol style="padding-left:20px;margin:0;color:var(--text-secondary);font-size:13px;line-height:1.7;">
+              <li>Abre la app <b style="color:var(--text-primary)">Salud</b> en tu iPhone</li>
+              <li>Toca tu <b style="color:var(--text-primary)">foto de perfil</b> (arriba a la derecha)</li>
+              <li>Baja hasta <b style="color:var(--text-primary)">Exportar todos los datos de salud</b></li>
+              <li>Espera a que se genere el archivo <b style="color:var(--text-primary)">export.zip</b></li>
+              <li>Sube el archivo aqui abajo</li>
+            </ol>
+          </div>
+          <label class="input-label" for="int-health-file" style="text-transform:uppercase;letter-spacing:0.06em;font-size:var(--text-xs);font-weight:var(--weight-semibold);">Subir export.xml o export.zip</label>
           <input class="input" id="int-health-file" type="file" accept=".xml,.zip" data-action="health-file" style="padding:var(--space-2);"/>
-          <p class="input-hint">Exporta desde Salud (iPhone) y sube el archivo aqui.</p>
+          <p class="input-hint">Trae datos de peso, pasos, calorias activas, pulso y VO2max.</p>
           <div data-health-status class="mt-2"></div>
         </div>
 
         <div data-panel="oura" class="mt-4" style="display:none;">
+          <div style="background:rgba(180,74,255,0.06);border:1px solid rgba(180,74,255,0.15);border-radius:12px;padding:12px;margin-bottom:12px;">
+            <p style="color:var(--text-primary);font-weight:600;margin-bottom:4px;font-size:13px;">${icon('target',14)} Como conectar Oura Ring:</p>
+            <ol style="padding-left:20px;margin:0;color:var(--text-secondary);font-size:13px;line-height:1.7;">
+              <li>Ve a <a href="https://cloud.ouraring.com/personal-access-tokens" target="_blank" rel="noopener" style="color:#B44AFF;font-weight:600;">cloud.ouraring.com/personal-access-tokens</a></li>
+              <li>Inicia sesion con tu cuenta Oura</li>
+              <li>Crea un <b style="color:var(--text-primary)">Personal Access Token</b> con permisos de lectura</li>
+              <li>Copia el token y pegalo aqui abajo</li>
+              <li>Pulsa <b style="color:#B44AFF">Guardar</b> y luego <b style="color:#B44AFF">Sync 7 dias</b></li>
+            </ol>
+          </div>
           <label class="input-label" style="text-transform:uppercase;letter-spacing:0.06em;font-size:var(--text-xs);font-weight:var(--weight-semibold);">Oura Personal Access Token</label>
           <input class="input" id="int-oura-token" type="password" placeholder="OURA_TOKEN..." value="${localStorage.getItem('marsfit.oura.token') ? '****' : ''}" style="transition:box-shadow 0.2s ease,border-color 0.2s ease;" onfocus="this.style.boxShadow='0 0 0 3px rgba(180,74,255,0.2),0 0 12px rgba(180,74,255,0.1)';this.style.borderColor='#B44AFF';" onblur="this.style.boxShadow='none';this.style.borderColor='';" />
-          <p class="input-hint">Obtenlo en <a href="https://cloud.ouraring.com/personal-access-tokens" target="_blank" style="color:var(--color-brand)">cloud.ouraring.com</a>. Trae sueno, actividad, recuperacion y pulso.</p>
+          <p class="input-hint">Trae sueno, actividad, recuperacion y pulso de los ultimos 7 dias.</p>
           <div style="display:flex;gap:var(--space-2);margin-top:var(--space-2);">
             <button class="btn btn--secondary btn--sm" data-action="save-oura">${icon('check', 14)} Guardar</button>
             <button class="btn btn--ghost btn--sm" data-action="sync-oura">${icon('refresh', 14)} Sync 7 dias</button>
@@ -404,7 +438,7 @@ export function render(container, ctx) {
       const newTheme = getConfig().theme === 'dark' ? 'light' : 'dark';
       setConfig({ theme: newTheme });
       document.documentElement.setAttribute('data-theme', newTheme);
-      localStorage.setItem('marsfit.theme', newTheme);
+      // Theme stored only via setConfig — no separate localStorage key
       // Re-render for visual update
       render(container, ctx);
       return;
@@ -521,19 +555,30 @@ export function render(container, ctx) {
     e.preventDefault();
 
     const fd = new FormData(form);
+    const units = fd.get('units') || 'metric';
+    let weightVal = parseFloat(fd.get('weightKg')) || 80;
+    let heightVal = parseInt(fd.get('heightCm'), 10) || 178;
+
+    // Convert imperial to metric for canonical storage
+    if (units === 'imperial') {
+      weightVal = Math.round(weightVal / 2.20462 * 10) / 10;
+      heightVal = Math.round(heightVal * 2.54);
+    }
+
     const patch = {
       name: fd.get('name')?.toString().trim() || '',
       sex: fd.get('sex') || 'm',
       age: parseInt(fd.get('age'), 10) || 30,
-      weightKg: parseFloat(fd.get('weightKg')) || 80,
-      heightCm: parseInt(fd.get('heightCm'), 10) || 178,
+      weightKg: weightVal,
+      heightCm: heightVal,
       activity: parseFloat(fd.get('activity')) || 1.55,
       goal: fd.get('goal') || 'volumen',
+      units,
     };
 
     // Basic validation
     if (patch.age < 14 || patch.age > 99) return;
-    if (patch.weightKg < 30 || patch.weightKg > 250) return;
+    if (patch.weightKg < 20 || patch.weightKg > 250) return;
     if (patch.heightCm < 100 || patch.heightCm > 250) return;
 
     updateProfile(patch);
@@ -550,8 +595,29 @@ export function render(container, ctx) {
       }, 1200);
     }
 
-    // Re-render to update computed values
-    render(container, ctx);
+    // Update computed values in place (preserve scroll)
+    const scrollY = window.scrollY;
+    const { bmr: newBmr, tdee: newTdee } = computeTDEE();
+    const bmrEls = section.querySelectorAll('[data-counter]');
+    bmrEls.forEach(el => {
+      const val = parseInt(el.dataset.counter, 10);
+      if (el.closest('.stat-number') && el.textContent) {
+        // Find BMR and TDEE counters by their label siblings
+        const label = el.closest('div')?.querySelector('.text-tertiary');
+        if (label?.textContent?.includes('BMR')) {
+          el.dataset.counter = newBmr;
+          el.textContent = newBmr;
+        } else if (label?.textContent?.includes('TDEE')) {
+          el.dataset.counter = newTdee;
+          el.textContent = newTdee;
+        }
+      }
+    });
+    // Fall back to re-render if in-place update is insufficient
+    requestAnimationFrame(() => {
+      render(container, ctx);
+      requestAnimationFrame(() => window.scrollTo(0, scrollY));
+    });
   }
 
   // -- Health file import --

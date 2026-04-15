@@ -3,7 +3,7 @@
 // Para activar: window.__MARSFIT_SUPABASE = { url: "...", anonKey: "..." }
 // o definir en localStorage: marsfit.supabase.url / marsfit.supabase.anonKey
 
-import { getState, setState, save } from "./store.js";
+import { getState, setState, save } from "./store-legacy.js";
 
 const CFG_KEY = "marsfit.backend.cfg";
 

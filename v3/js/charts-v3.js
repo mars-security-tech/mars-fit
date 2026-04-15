@@ -209,6 +209,12 @@ export function renderBarChart(container, data, color, labels = [], opts = {}) {
     showValues = true,
   } = opts;
 
+  // Empty state: all values are 0
+  if (data.every(v => v === 0)) {
+    container.innerHTML = '<p class="text-tertiary text-sm" style="padding:var(--space-4);text-align:center;">Sin datos para este periodo.</p>';
+    return;
+  }
+
   const maxVal = Math.max(...data, 1);
   const count = data.length;
   const padding = { top: 24, bottom: 32, left: 8, right: 8 };
@@ -307,6 +313,20 @@ export function renderBarChart(container, data, color, labels = [], opts = {}) {
       });
     });
   }
+
+  // ResizeObserver: re-render when container becomes visible or resizes
+  if (typeof ResizeObserver !== 'undefined') {
+    let lastWidth = container.clientWidth;
+    const ro = new ResizeObserver((entries) => {
+      const newWidth = entries[0].contentRect.width;
+      if (newWidth > 0 && newWidth !== lastWidth) {
+        lastWidth = newWidth;
+        renderBarChart(container, data, color, labels, { ...opts, animate: false });
+        ro.disconnect();
+      }
+    });
+    ro.observe(container);
+  }
 }
 
 
@@ -332,7 +352,10 @@ export function renderLineChart(container, data, color, fill = true, opts = {}) 
     showDots = true,
   } = opts;
 
-  if (!data || data.length < 2) return;
+  if (!data || data.length < 2) {
+    container.innerHTML = '<p class="text-tertiary text-sm" style="padding:var(--space-4);text-align:center;">Datos insuficientes para graficar.</p>';
+    return;
+  }
 
   const padding = { top: 16, bottom: labels.length ? 28 : 12, left: 12, right: 12 };
   const w = container.clientWidth || 320;

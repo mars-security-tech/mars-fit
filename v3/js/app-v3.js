@@ -215,6 +215,8 @@ function setupGlobalEvents() {
   if (logoutBtn) {
     logoutBtn.addEventListener('click', () => {
       authLogout();
+      // Clear theme override so next user gets default
+      try { localStorage.removeItem('marsfit.theme'); } catch { /* ignore */ }
       setLoggedIn(false);
       setIsAdmin(false);
       topbar.classList.add('hidden');
@@ -358,11 +360,28 @@ async function boot() {
 boot().catch(e => {
   console.error('[MARS FIT v3] Error fatal:', e);
   if (app) {
-    app.innerHTML = `
-      <div class="page-content flex flex-col items-center justify-center text-center p-8" style="min-height:80vh">
-        <h2 class="text-mars mb-4">Error al iniciar MARS FIT</h2>
-        <p class="text-secondary mb-6">${e.message}</p>
-        <button class="btn btn--primary" onclick="location.reload()">Reintentar</button>
-      </div>`;
+    // Build error UI safely with DOM APIs to prevent XSS
+    app.innerHTML = '';
+    const wrapper = document.createElement('div');
+    wrapper.className = 'page-content flex flex-col items-center justify-center text-center p-8';
+    wrapper.style.minHeight = '80vh';
+
+    const heading = document.createElement('h2');
+    heading.className = 'text-mars mb-4';
+    heading.textContent = 'Error al iniciar MARS FIT';
+
+    const msg = document.createElement('p');
+    msg.className = 'text-secondary mb-6';
+    msg.textContent = e.message;
+
+    const btn = document.createElement('button');
+    btn.className = 'btn btn--primary';
+    btn.textContent = 'Reintentar';
+    btn.addEventListener('click', () => location.reload());
+
+    wrapper.appendChild(heading);
+    wrapper.appendChild(msg);
+    wrapper.appendChild(btn);
+    app.appendChild(wrapper);
   }
 });

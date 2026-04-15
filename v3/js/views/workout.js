@@ -20,8 +20,19 @@ import { icon } from '../icons.js';
 import { renderRingProgress } from '../charts-v3.js';
 import { ExerciseAnim } from '../anim3d.js';
 import { getState, setState, today } from '../store-legacy.js';
-import { EXERCISES, MUSCLES } from '../../data-legacy/exercises.js';
-import { ROUTINES } from '../../data-legacy/routines.js';
+import exercises, { MUSCLE_GROUPS } from '../../data/exercises-v3.js';
+import { ROUTINES } from '../../data/routines-v3.js';
+
+// Alias for compatibility: v3 exports default array and MUSCLE_GROUPS object
+const EXERCISES = exercises;
+// Build a flat muscle label map from MUSCLE_GROUPS for display
+const MUSCLES = (() => {
+  const map = {};
+  for (const [, group] of Object.entries(MUSCLE_GROUPS)) {
+    for (const m of group.muscles) map[m] = group.label;
+  }
+  return map;
+})();
 
 // ============================================================
 // HELPERS
@@ -34,9 +45,17 @@ function fmtTime(totalSec) {
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
-/** Look up exercise definition by id */
+/** Look up exercise definition by id, adapting v3 shape to expected fields */
 function findExercise(id) {
-  return EXERCISES.find(e => e.id === id) || null;
+  const ex = EXERCISES.find(e => e.id === id);
+  if (!ex) return null;
+  // Adapt v3 shape: muscle -> first primary muscle, cues -> tips
+  return {
+    ...ex,
+    muscle: ex.muscles?.primary?.[0] || '',
+    cues: ex.tips || ex.instructions || [],
+    animate: ex.videoPrompt ? 'generic' : (ex.category === 'compound' ? 'push' : 'lateral'),
+  };
 }
 
 /** Get last weight used for an exercise from workout history */
@@ -181,10 +200,20 @@ export function render(container, ctx) {
   // ── Event delegation ──
   container.addEventListener('click', handleClick);
   container.addEventListener('input', handleInput);
+  container.addEventListener('keydown', handleKeydown);
 
   // ────────────────────────────────────────────
   // EVENT HANDLERS
   // ────────────────────────────────────────────
+
+  function handleKeydown(e) {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const target = e.target.closest('[data-action="toggle-exercise"]');
+    if (!target) return;
+    e.preventDefault();
+    const idx = parseInt(target.dataset.exIdx, 10);
+    toggleExercise(idx);
+  }
 
   function handleClick(e) {
     const target = e.target.closest('[data-action]');
@@ -231,6 +260,18 @@ export function render(container, ctx) {
       ctx.navigate('/home');
       return;
     }
+
+    // Navigate to exercise library
+    if (action === 'go-exercise-library') {
+      ctx.navigate('/exercise-library');
+      return;
+    }
+
+    // Navigate to workout log
+    if (action === 'go-workout-log') {
+      ctx.navigate('/workout-log');
+      return;
+    }
   }
 
   function handleInput(e) {
@@ -240,9 +281,9 @@ export function render(container, ctx) {
     const setIdx = parseInt(input.dataset.setIdx, 10);
     const field = input.dataset.field;
     if (field === 'weight') {
-      setsState[exIdx][setIdx].weight = parseFloat(input.value) || 0;
+      setsState[exIdx][setIdx].weight = Math.max(0, parseFloat(input.value) || 0);
     } else if (field === 'reps') {
-      setsState[exIdx][setIdx].reps = parseInt(input.value, 10) || 0;
+      setsState[exIdx][setIdx].reps = Math.max(0, parseInt(input.value, 10) || 0);
     }
   }
 
@@ -291,10 +332,23 @@ export function render(container, ctx) {
     // Read current input values
     const weightInput = container.querySelector(`input[data-ex-idx="${exIdx}"][data-set-idx="${setIdx}"][data-field="weight"]`);
     const repsInput = container.querySelector(`input[data-ex-idx="${exIdx}"][data-set-idx="${setIdx}"][data-field="reps"]`);
-    if (weightInput) set.weight = parseFloat(weightInput.value) || 0;
-    if (repsInput) set.reps = parseInt(repsInput.value, 10) || 0;
+    if (weightInput) set.weight = Math.max(0, parseFloat(weightInput.value) || 0);
+    if (repsInput) set.reps = Math.max(0, parseInt(repsInput.value, 10) || 0);
+
+    // Reject zero reps
+    if (set.reps <= 0) {
+      if (repsInput) {
+        repsInput.style.borderColor = 'var(--mars-red)';
+        repsInput.style.boxShadow = '0 0 0 2px rgba(218,7,4,0.2)';
+        setTimeout(() => { repsInput.style.borderColor = ''; repsInput.style.boxShadow = ''; }, 1500);
+      }
+      return;
+    }
 
     set.done = true;
+
+    // Haptic feedback on set-complete
+    navigator.vibrate?.([20]);
 
     // Update row UI
     const row = container.querySelector(`[data-set-row="${exIdx}-${setIdx}"]`);
@@ -379,6 +433,7 @@ export function render(container, ctx) {
         if (countdownEl) countdownEl.textContent = fmtTime(remaining);
       }
       if (remaining <= 0) {
+        navigator.vibrate?.([100, 50, 100]);
         clearRestTimer();
         if (onComplete) onComplete();
       }
@@ -416,6 +471,13 @@ export function render(container, ctx) {
   }
 
   function finishSession() {
+    // Check for incomplete exercises
+    const completedExercises = setsState.filter(sets => sets.every(s => s.done)).length;
+    if (completedExercises < totalExercises) {
+      const ok = confirm(`Tienes ${totalExercises - completedExercises} ejercicio(s) incompleto(s). Deseas finalizar la sesion?`);
+      if (!ok) return;
+    }
+
     const state = getState();
 
     // Gather all completed sets
@@ -481,6 +543,7 @@ export function render(container, ctx) {
   function cleanup() {
     container.removeEventListener('click', handleClick);
     container.removeEventListener('input', handleInput);
+    container.removeEventListener('keydown', handleKeydown);
     intervals.forEach(id => clearInterval(id));
     if (sessionTimerInterval) clearInterval(sessionTimerInterval);
     if (restTimerInterval) clearInterval(restTimerInterval);
@@ -502,7 +565,7 @@ function buildHTML(routine, day, dayType, exercises, totalExercises, setsState) 
 
       ${buildCoachTip(dayType)}
 
-      ${exercises.map((ex, idx) => buildExerciseCard(ex, idx, setsState[idx], idx === 0)).join('')}
+      ${exercises.map((ex, idx) => buildExerciseCard(ex, idx, setsState[idx], idx === 0, dayType)).join('')}
 
       ${buildRestTimerOverlay()}
 
@@ -560,7 +623,7 @@ function buildCoachTip(dayType) {
   `;
 }
 
-function buildExerciseCard(ex, idx, sets, expanded) {
+function buildExerciseCard(ex, idx, sets, expanded, dayType) {
   const def = ex.def;
   const muscleName = MUSCLES[def.muscle] || def.muscle;
   const equipmentName = def.equipment || '';
@@ -642,7 +705,7 @@ function buildExerciseCard(ex, idx, sets, expanded) {
         <!-- Rest timer label -->
         <div style="padding:0 var(--space-4) var(--space-3);display:flex;align-items:center;gap:var(--space-2);color:var(--text-tertiary);font-size:var(--text-xs);">
           ${icon('clock', 14)}
-          <span>Descanso: ${fmtTime(getRestTime(detectDayType('')))}</span>
+          <span>Descanso: ${fmtTime(getRestTime(dayType || 'fuerza'))}</span>
         </div>
 
       </div>
@@ -714,6 +777,14 @@ function buildFinishButton() {
       <button data-action="finish-session" class="btn btn--primary btn--lg" style="width:100%;font-size:var(--text-base);">
         ${icon('check', 20)} Finalizar sesion
       </button>
+      <div style="display:flex;gap:var(--space-3);margin-top:var(--space-3);">
+        <button data-action="go-exercise-library" class="btn btn--ghost btn--sm" style="flex:1;">
+          ${icon('search', 14)} Ver ejercicios
+        </button>
+        <button data-action="go-workout-log" class="btn btn--ghost btn--sm" style="flex:1;">
+          ${icon('chart', 14)} Historial
+        </button>
+      </div>
     </div>
   `;
 }

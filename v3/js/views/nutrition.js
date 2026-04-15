@@ -14,7 +14,7 @@
 import { icon } from '../icons.js';
 import { renderDonut, renderBarChart, renderRingProgress, animateCounter } from '../charts-v3.js';
 import { getState, setState, subscribe, computeMacros, today } from '../store-legacy.js';
-import { DIETS } from '../../data-legacy/diets.js';
+import { DIETS } from '../../data/diets-v3.js';
 import { analyzeMealPhoto } from '../ai-legacy.js';
 import { buildShoppingList } from '../shopping-legacy.js';
 
@@ -41,6 +41,13 @@ const CATEGORY_LABELS = {
   despensa:       'Despensa',
   otros:          'Otros',
 };
+
+/** Basic HTML escape for user-derived strings */
+function escapeHtml(str) {
+  const d = document.createElement('div');
+  d.textContent = str ?? '';
+  return d.innerHTML;
+}
 
 function fmtDate(dateStr) {
   const d = new Date(dateStr + 'T12:00:00');
@@ -133,7 +140,7 @@ export function render(root, ctx) {
         <nav class="nut-tabs" style="display:flex;gap:var(--space-2);padding:var(--space-4) var(--space-4) 0;overflow-x:auto;" role="tablist" aria-label="Secciones de nutricion">
           ${['resumen','registro','plan','compra'].map(t => `
             <button class="chip chip--clickable ${activeTab === t ? 'chip--active' : ''}"
-                    role="tab" aria-selected="${activeTab === t}" data-tab="${t}">
+                    role="tab" aria-selected="${activeTab === t}" aria-controls="nut-tabpanel-${t}" id="nut-tab-${t}" data-tab="${t}">
               ${t === 'resumen' ? icon('chart', 14) : ''}
               ${t === 'registro' ? icon('plus', 14) : ''}
               ${t === 'plan' ? icon('fork', 14) : ''}
@@ -144,7 +151,7 @@ export function render(root, ctx) {
         </nav>
 
         <!-- Tab content -->
-        <div class="nut-content" style="padding:var(--space-4);">
+        <div class="nut-content" role="tabpanel" id="nut-tabpanel-${activeTab}" aria-labelledby="nut-tab-${activeTab}" style="padding:var(--space-4);">
           ${activeTab === 'resumen'  ? renderResumen()  : ''}
           ${activeTab === 'registro' ? renderRegistro() : ''}
           ${activeTab === 'plan'     ? renderPlan()     : ''}
@@ -285,7 +292,7 @@ export function render(root, ctx) {
           </div>
           <div style="flex:1;min-width:0;">
             <div style="display:flex;justify-content:space-between;align-items:center;">
-              <span style="font-family:var(--font-display);font-weight:var(--weight-semibold);font-size:var(--text-sm);text-transform:uppercase;">${meal.name || slot.label}</span>
+              <span style="font-family:var(--font-display);font-weight:var(--weight-semibold);font-size:var(--text-sm);text-transform:uppercase;">${escapeHtml(meal.name || slot.label)}</span>
               <span style="font-family:var(--font-display);font-weight:var(--weight-bold);font-size:var(--text-sm);color:var(--color-nutrition);">${meal.kcal || 0} kcal</span>
             </div>
             <div style="font-size:var(--text-xs);color:var(--text-tertiary);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
@@ -506,16 +513,16 @@ export function render(root, ctx) {
 
         resultDiv.innerHTML = `
           <div style="text-align:left;">
-            <h4 style="font-size:var(--text-base);margin-bottom:var(--space-2);">${result.meal_name || 'Comida detectada'}</h4>
+            <h4 style="font-size:var(--text-base);margin-bottom:var(--space-2);">${escapeHtml(result.meal_name || 'Comida detectada')}</h4>
             <div style="display:flex;gap:var(--space-3);flex-wrap:wrap;margin-bottom:var(--space-3);">
               <span class="chip chip--success">${result.kcal || 0} kcal</span>
               <span class="chip" style="border-color:${MACRO_COLORS.protein};color:${MACRO_COLORS.protein};">P ${result.protein_g || 0}g</span>
               <span class="chip" style="border-color:${MACRO_COLORS.carbs};color:${MACRO_COLORS.carbs};">C ${result.carbs_g || 0}g</span>
               <span class="chip" style="border-color:${MACRO_COLORS.fats};color:${MACRO_COLORS.fats};">F ${result.fats_g || 0}g</span>
             </div>
-            ${result.items ? `<p style="font-size:var(--text-xs);color:var(--text-tertiary);margin-bottom:var(--space-3);">${result.items.join(', ')}</p>` : ''}
+            ${result.items ? `<p style="font-size:var(--text-xs);color:var(--text-tertiary);margin-bottom:var(--space-3);">${result.items.map(i => escapeHtml(i)).join(', ')}</p>` : ''}
             ${result.confidence !== undefined ? `<p style="font-size:var(--text-xs);color:var(--text-tertiary);">Confianza: ${Math.round(result.confidence * 100)}%</p>` : ''}
-            ${result.notes ? `<p style="font-size:var(--text-xs);color:var(--text-tertiary);margin-top:var(--space-1);">${result.notes}</p>` : ''}
+            ${result.notes ? `<p style="font-size:var(--text-xs);color:var(--text-tertiary);margin-top:var(--space-1);">${escapeHtml(result.notes)}</p>` : ''}
 
             <!-- Meal slot selector -->
             <label class="input-label" style="margin-top:var(--space-3);">Momento del dia</label>
@@ -560,13 +567,13 @@ export function render(root, ctx) {
   /* ── METODO: BUSCAR ─────────────────────────────────────── */
 
   function renderBuscarMethod(container) {
-    // Simple text search against diet sample foods
+    // Search against v3 diet foods (meals[].items[])
     const allFoods = [];
     for (const diet of Object.values(DIETS)) {
-      for (const meal of diet.sample) {
-        for (const item of meal.items) {
-          if (!allFoods.find(f => f.name === item)) {
-            allFoods.push({ name: item, dietName: diet.name });
+      for (const meal of (diet.meals || [])) {
+        for (const item of (meal.items || [])) {
+          if (!allFoods.find(f => f.name === item.food)) {
+            allFoods.push({ name: item.food, dietName: diet.name, kcal: item.kcal || 0, p: item.p || 0, c: item.c || 0, f: item.f || 0, g: item.g || 0 });
           }
         }
       }
@@ -595,7 +602,7 @@ export function render(root, ctx) {
         const filtered = allFoods.filter(f => f.name.toLowerCase().includes(q));
         results.innerHTML = filtered.length
           ? filtered.map(f => foodItem(f)).join('')
-          : `<p style="text-align:center;color:var(--text-tertiary);padding:var(--space-4);font-size:var(--text-sm);">Sin resultados para "${query}"</p>`;
+          : `<p style="text-align:center;color:var(--text-tertiary);padding:var(--space-4);font-size:var(--text-sm);">Sin resultados para "${escapeHtml(query)}"</p>`;
       }
 
       results.querySelectorAll('[data-food]').forEach(btn => {
@@ -608,13 +615,13 @@ export function render(root, ctx) {
 
     function foodItem(f) {
       return `
-        <button class="card-glow" style="padding:var(--space-2) var(--space-3);cursor:pointer;border:none;text-align:left;display:flex;align-items:center;gap:var(--space-3);" data-food="${f.name}">
+        <button class="card-glow" style="padding:var(--space-2) var(--space-3);cursor:pointer;border:none;text-align:left;display:flex;align-items:center;gap:var(--space-3);" data-food="${escapeHtml(f.name)}">
           <div style="width:28px;height:28px;border-radius:var(--radius-sm);background:rgba(59,130,246,0.12);display:flex;align-items:center;justify-content:center;color:var(--color-steps);flex-shrink:0;">
             ${icon('apple', 14)}
           </div>
           <div style="flex:1;min-width:0;">
-            <span style="font-size:var(--text-sm);font-weight:var(--weight-semibold);color:var(--text-primary);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${f.name}</span>
-            <span style="font-size:11px;color:var(--text-tertiary);">${f.dietName}</span>
+            <span style="font-size:var(--text-sm);font-weight:var(--weight-semibold);color:var(--text-primary);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(f.name)}</span>
+            <span style="font-size:11px;color:var(--text-tertiary);">${escapeHtml(f.dietName)} · ${f.kcal} kcal · P${f.p}g C${f.c}g F${f.f}g</span>
           </div>
           <span style="color:var(--text-tertiary);">${icon('chevron-right', 14)}</span>
         </button>
@@ -629,28 +636,43 @@ export function render(root, ctx) {
     const methodContent = container.querySelector ? container : root.querySelector('#nut-method-content');
     if (!methodContent) return;
 
+    // Look up real macro data from v3 diets
+    let defKcal = 200, defProt = 15, defCarbs = 20, defFats = 8;
+    for (const diet of Object.values(DIETS)) {
+      for (const meal of (diet.meals || [])) {
+        const found = (meal.items || []).find(i => i.food === foodName);
+        if (found) {
+          defKcal = found.kcal || defKcal;
+          defProt = found.p || defProt;
+          defCarbs = found.c || defCarbs;
+          defFats = found.f || defFats;
+          break;
+        }
+      }
+    }
+
     methodContent.innerHTML = `
       <div class="card-glow">
         <div class="metric-card__header">
-          <span class="metric-card__label">${icon('edit', 16)} ${foodName}</span>
+          <span class="metric-card__label">${icon('edit', 16)} ${escapeHtml(foodName)}</span>
           <button class="btn btn--ghost btn--icon btn--sm" id="nut-food-back">${icon('x', 16)}</button>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);margin-bottom:var(--space-4);">
           <div>
             <label class="input-label">kcal</label>
-            <input type="number" class="input" id="nut-food-kcal" value="300" min="0" step="10">
+            <input type="number" class="input" id="nut-food-kcal" value="${defKcal}" min="0" step="10">
           </div>
           <div>
             <label class="input-label">Proteina (g)</label>
-            <input type="number" class="input" id="nut-food-prot" value="25" min="0" step="1">
+            <input type="number" class="input" id="nut-food-prot" value="${defProt}" min="0" step="1">
           </div>
           <div>
             <label class="input-label">Carbs (g)</label>
-            <input type="number" class="input" id="nut-food-carbs" value="30" min="0" step="1">
+            <input type="number" class="input" id="nut-food-carbs" value="${defCarbs}" min="0" step="1">
           </div>
           <div>
             <label class="input-label">Grasas (g)</label>
-            <input type="number" class="input" id="nut-food-fats" value="12" min="0" step="1">
+            <input type="number" class="input" id="nut-food-fats" value="${defFats}" min="0" step="1">
           </div>
         </div>
         <label class="input-label">Momento del dia</label>
@@ -731,6 +753,19 @@ export function render(root, ctx) {
       const name = container.querySelector('#nut-quick-name').value.trim();
       const slot = container.querySelector('#nut-quick-slot').value;
       const slotInfo = MEAL_SLOTS.find(s => s.key === slot) || MEAL_SLOTS[0];
+      const kcalVal = parseInt(container.querySelector('#nut-quick-kcal').value) || 0;
+
+      // Require kcal > 0
+      if (kcalVal <= 0) {
+        const kcalInput = container.querySelector('#nut-quick-kcal');
+        if (kcalInput) {
+          kcalInput.style.borderColor = 'var(--mars-red)';
+          kcalInput.style.boxShadow = '0 0 0 2px rgba(218,7,4,0.2)';
+          kcalInput.focus();
+          setTimeout(() => { kcalInput.style.borderColor = ''; kcalInput.style.boxShadow = ''; }, 2000);
+        }
+        return;
+      }
 
       addMeal({
         name: name ? slotInfo.label + ' - ' + name : slotInfo.label,
@@ -900,14 +935,21 @@ export function render(root, ctx) {
             </ul>
           </div>
 
-          <!-- Sample menu -->
+          <!-- Sample menu (v3: meals with per-item macros) -->
           <div>
             <span class="input-label" style="margin-bottom:var(--space-2);display:block;">Menu ejemplo</span>
             <div style="display:flex;flex-direction:column;gap:var(--space-2);">
-              ${diet.sample.map(s => `
-                <div style="padding:var(--space-2) var(--space-3);background:var(--bg-surface-raised);border-radius:var(--radius-sm);">
-                  <span style="font-weight:var(--weight-semibold);font-size:var(--text-sm);text-transform:uppercase;color:var(--color-nutrition);">${s.meal}</span>
-                  <p style="font-size:var(--text-xs);color:var(--text-tertiary);margin-top:2px;">${s.items.join(' + ')}</p>
+              ${(diet.meals || []).map(m => `
+                <div style="padding:var(--space-3);background:var(--bg-surface-raised);border-radius:var(--radius-sm);">
+                  <span style="font-weight:var(--weight-semibold);font-size:var(--text-sm);text-transform:uppercase;color:var(--color-nutrition);">${escapeHtml(m.name)}</span>
+                  <div style="margin-top:4px;display:flex;flex-direction:column;gap:2px;">
+                    ${(m.items || []).map(item => `
+                      <div style="display:flex;justify-content:space-between;font-size:var(--text-xs);color:var(--text-tertiary);">
+                        <span>${escapeHtml(item.food)}</span>
+                        <span style="flex-shrink:0;margin-left:var(--space-2);">${item.kcal}kcal P${item.p}g C${item.c}g F${item.f}g</span>
+                      </div>
+                    `).join('')}
+                  </div>
                 </div>
               `).join('')}
             </div>
@@ -939,7 +981,7 @@ export function render(root, ctx) {
     // Customize
     const custBtn = root.querySelector('[data-action="customize-diet"]');
     if (custBtn && navigate) {
-      custBtn.addEventListener('click', () => navigate('diet-builder'));
+      custBtn.addEventListener('click', () => navigate('/diet-builder'));
     }
   }
 
@@ -1091,8 +1133,19 @@ export function render(root, ctx) {
   renderView();
 
   // Subscribe to state changes (e.g. meals added from another view)
-  unsub = subscribe(() => {
-    renderView();
+  // Debounce re-render to avoid killing user input mid-typing
+  let renderDebounceTimer = null;
+  unsub = subscribe((changedKeys) => {
+    // Only re-render if nutrition-relevant keys changed
+    const nutritionKeys = ['meals', 'dietId', 'favMeals', 'profile'];
+    if (Array.isArray(changedKeys) && changedKeys.length > 0 && !changedKeys.some(k => nutritionKeys.includes(k))) {
+      return;
+    }
+    if (renderDebounceTimer) clearTimeout(renderDebounceTimer);
+    renderDebounceTimer = setTimeout(() => {
+      renderDebounceTimer = null;
+      renderView();
+    }, 250);
   });
 
   // Cleanup

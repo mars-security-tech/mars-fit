@@ -12,6 +12,8 @@
 import { setConfig, updateProfile, getConfig, computeTDEE, computeMacros } from '../store-v3.js';
 import { setOnboarded, navigate } from '../router.js';
 import { icon, marsLogo } from '../icons.js';
+import { ROUTINES } from '../../data/routines-v3.js';
+import { DIETS } from '../../data/diets-v3.js';
 
 // ============================================================
 // CONSTANTES
@@ -247,8 +249,9 @@ export function render(container, ctx) {
             <div class="animate-in animate-in--stagger-4">
               <label class="input-label mb-3">${icon('flame', 14)} Nivel de Actividad</label>
               <div class="flex flex-col gap-2">
-                ${ACTIVITY_LEVELS.map(a => `
-                  <label class="onboarding__radio-card ${data.activity === a.value ? 'onboarding__radio-card--selected' : ''}" data-activity="${a.value}">
+                ${ACTIVITY_LEVELS.map((a, i) => `
+                  <label class="onboarding__radio-card ${data.activity === a.value ? 'onboarding__radio-card--selected' : ''}" data-activity="${a.value}" for="activity-radio-${i}">
+                    <input type="radio" name="activity-level" id="activity-radio-${i}" value="${a.value}" ${data.activity === a.value ? 'checked' : ''} class="sr-only" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0;">
                     <span class="onboarding__radio-icon">${icon(a.icon, 16)}</span>
                     <div class="flex-1">
                       <span class="text-sm" style="font-weight:var(--weight-semibold)">${a.label}</span>
@@ -328,6 +331,19 @@ export function render(container, ctx) {
       if (data.age < 14 || data.age > 80) {
         errorText.textContent = 'Edad debe ser entre 14 y 80';
         errorEl.classList.remove('hidden');
+        ageInput.focus();
+        return;
+      }
+      if (data.heightCm < 140 || data.heightCm > 220) {
+        errorText.textContent = 'Altura debe ser entre 140 y 220 cm';
+        errorEl.classList.remove('hidden');
+        heightInput.focus();
+        return;
+      }
+      if (data.weightKg < 40 || data.weightKg > 200) {
+        errorText.textContent = 'Peso debe ser entre 40 y 200 kg';
+        errorEl.classList.remove('hidden');
+        weightInput.focus();
         return;
       }
 
@@ -608,9 +624,61 @@ export function render(container, ctx) {
       equipment: data.equipment,
     });
 
-    // Marcar onboarded
-    setConfig({ onboarded: true });
+    // Auto-assign routine based on goal + experience + equipment
+    const matchedRoutine = findBestRoutine(data.goal, data.experience, data.equipment);
+    const matchedDiet = findBestDiet(data.goal);
+
+    const configPatch = { onboarded: true };
+    if (matchedRoutine) configPatch.routineId = matchedRoutine;
+    if (matchedDiet) configPatch.dietId = matchedDiet;
+    setConfig(configPatch);
     setOnboarded(true);
+
+    // Explicitly navigate to home
+    navigate('/home');
+  }
+
+  /** Find first matching routine from v3 data */
+  function findBestRoutine(goal, experience, equipment) {
+    const routineEntries = Object.entries(ROUTINES);
+
+    // Try exact goal + level match
+    for (const [id, r] of routineEntries) {
+      if (r.goal === goal && r.level === experience) return id;
+    }
+    // Fallback: match by goal only
+    for (const [id, r] of routineEntries) {
+      if (r.goal === goal) return id;
+    }
+    // Fallback: match by equipment context (casa = home, gym = default)
+    if (equipment === 'casa') {
+      for (const [id, r] of routineEntries) {
+        if (r.name?.toLowerCase().includes('casa') || r.description?.toLowerCase().includes('casa')) return id;
+      }
+    }
+    // Ultimate fallback: first routine
+    return routineEntries.length > 0 ? routineEntries[0][0] : null;
+  }
+
+  /** Find first matching diet from v3 data */
+  function findBestDiet(goal) {
+    const dietEntries = Object.entries(DIETS);
+
+    // Map goals to likely diet preferences
+    const goalDietMap = {
+      volumen: 'alta_proteina',
+      definicion: 'deficit_flexible',
+      mantenimiento: 'mediterranea',
+      rendimiento: 'alta_proteina',
+      turnos_largos: 'mediterranea',
+      estabilidad: 'mediterranea',
+    };
+
+    const preferred = goalDietMap[goal];
+    if (preferred && DIETS[preferred]) return preferred;
+
+    // Fallback: first diet
+    return dietEntries.length > 0 ? dietEntries[0][0] : null;
   }
 
   // ============================================================

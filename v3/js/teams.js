@@ -35,13 +35,20 @@ function _saveTeams(teams) {
 // HELPERS
 // ============================================================
 
-/** Genera codigo aleatorio de 6 chars */
+/** Genera codigo aleatorio unico de 6 chars */
 function generateCode() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let code = 'MARS-';
-  for (let i = 0; i < 4; i++) {
-    code += chars[Math.floor(Math.random() * chars.length)];
-  }
+  const teams = _loadTeams();
+  const existingCodes = new Set(teams.map(t => t.code));
+  let code;
+  let attempts = 0;
+  do {
+    code = 'MARS-';
+    for (let i = 0; i < 4; i++) {
+      code += chars[Math.floor(Math.random() * chars.length)];
+    }
+    attempts++;
+  } while (existingCodes.has(code) && attempts < 100);
   return code;
 }
 
@@ -72,7 +79,7 @@ export function createTeam(name) {
   return { ok: true, team };
 }
 
-/** Invitar a un usuario por email a un team */
+/** Invitar a un usuario por email a un team (solo miembros pueden invitar) */
 export function inviteToTeam(teamCode, email) {
   const session = getSession();
   if (!session) return { ok: false, error: 'No autenticado' };
@@ -80,6 +87,10 @@ export function inviteToTeam(teamCode, email) {
   const teams = _loadTeams();
   const team = teams.find(t => t.code === teamCode);
   if (!team) return { ok: false, error: 'Team no encontrado' };
+
+  // Authorization: current user must be a member of the team
+  const isMember = team.members.some(m => m.email.toLowerCase() === session.email.toLowerCase());
+  if (!isMember) return { ok: false, error: 'Debes ser miembro del team para invitar' };
 
   // Check if already member
   if (team.members.find(m => m.email.toLowerCase() === email.toLowerCase())) {
@@ -120,11 +131,20 @@ export function getAllTeams() {
   return _loadTeams();
 }
 
-/** Eliminar un team */
+/** Eliminar un team (solo el creador puede hacerlo) */
 export function deleteTeam(teamCode) {
+  const session = getSession();
+  if (!session) return { ok: false, error: 'No autenticado' };
+
   const teams = _loadTeams();
   const idx = teams.findIndex(t => t.code === teamCode);
   if (idx === -1) return { ok: false, error: 'Team no encontrado' };
+
+  // Authorization: only creator can delete
+  if (teams[idx].createdBy.toLowerCase() !== session.email.toLowerCase()) {
+    return { ok: false, error: 'Solo el creador del team puede eliminarlo' };
+  }
+
   teams.splice(idx, 1);
   _saveTeams(teams);
   return { ok: true };

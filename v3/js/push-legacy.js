@@ -2,7 +2,7 @@
 // Requiere VAPID public key (se guarda en config local o window.__MARSFIT_VAPID).
 // Registro vía service worker -> subscription -> envío a Supabase.
 
-import { getClient, getUser } from "./backend.js";
+import { getClient, getUser } from "./backend-legacy.js";
 
 const VAPID_KEY_LS = "marsfit.vapid.public";
 

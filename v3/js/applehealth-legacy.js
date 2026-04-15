@@ -7,7 +7,7 @@
 //
 // Este módulo implementa (1) completo y (2) como helper de configuración.
 
-import { getState, setState } from "./store.js";
+import { getState, setState } from "./store-legacy.js";
 
 // ---------- (1) Import desde export.xml ----------
 export async function importHealthExport(file) {

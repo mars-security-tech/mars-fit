@@ -15,6 +15,8 @@ const ICONS = {
 
   "heart-pulse": `<path d="M20.42 4.58a5.4 5.4 0 0 0-7.65 0l-.77.78-.77-.78a5.4 5.4 0 0 0-7.65 7.65l.77.78L12 20.65l3.5-3.5"/><path d="M16 13l2 2 2-3 2 2 2-2"/>`,
 
+  sun: `<circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="6.34" y2="6.34"/><line x1="17.66" y1="17.66" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="6.34" y2="17.66"/><line x1="17.66" y1="6.34" x2="19.07" y2="4.93"/>`,
+
   moon: `<path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/>`,
 
   "sleep-moon": `<path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/><path d="M14 5l1 2h2l-1.5 1.5.5 2L14 9.5 12 10.5l.5-2L11 7h2l1-2"/>`,
@@ -179,6 +181,8 @@ export function renderIcon(el, name, size = 20) {
  * @returns {string} Inline SVG markup
  */
 export function marsLogo(height = 28, cssClass = 'mars-logo-svg') {
+  // Isotipo Ā canónico — trazado pixel-perfect del PNG 822x1084 original.
+  // Rojo macron: #DA0704 · Cuerpo Ā: currentColor (se adapta a dark/light vía CSS).
   const w = Math.round(height * (100 / 130) * 10) / 10;
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 130" fill="none" width="${w}" height="${height}" class="${cssClass}" aria-hidden="true"><rect x="15" y="0" width="70" height="12.5" fill="#DA0704"/><path fill-rule="evenodd" clip-rule="evenodd" fill="currentColor" d="M 40 20 L 59 20 L 100 130 L 0 130 Z M 35 38 L 44 63 L 26 110 L 73 110 L 47 38 Z M 20.5 115 L 30.5 115 L 33.5 130 L 18 130 Z"/></svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 130" fill="none" width="${w}" height="${height}" class="${cssClass}" aria-hidden="true"><rect x="14" y="0" width="72" height="12" fill="#DA0704"/><path fill-rule="evenodd" clip-rule="evenodd" fill="currentColor" d="M 38 18 L 62 18 L 100 130 L 0 130 Z M 34 37 L 47 37 L 72 108 L 26 108 L 44 62 Z"/></svg>`;
 }

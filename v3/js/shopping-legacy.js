@@ -1,7 +1,7 @@
 // Generador de lista de la compra semanal a partir de la dieta activa.
 // Agrupa ingredientes por categoría y estima cantidad por 7 días.
 
-import { DIETS } from "../data/diets.js";
+import { DIETS } from "../data/diets-v3.js";
 
 const CATEGORIES = {
   proteinas: ["huevos","pollo","ternera","pavo","solomillo","salmón","atún","merluza","sardinas","caballa","yogur","lonchas","lomo"],
@@ -40,6 +40,24 @@ function extractIngredients(sample) {
 export function buildShoppingList(dietId, days = 7) {
   const diet = DIETS[dietId];
   if (!diet) return {};
+
+  // v3 diets have pre-built shoppingList arrays — use them directly
+  if (Array.isArray(diet.shoppingList) && diet.shoppingList.length > 0) {
+    const groups = {};
+    for (const entry of diet.shoppingList) {
+      const cat = classify(entry.item || '');
+      (groups[cat] = groups[cat] || []).push({
+        item: entry.item,
+        portions: entry.qty || (entry.g ? Math.round(entry.g / 100) : 1),
+        qty: entry.qty || '',
+      });
+    }
+    for (const k of Object.keys(groups)) groups[k].sort((a,b) => b.portions - a.portions);
+    return groups;
+  }
+
+  // Fallback: legacy v1 diets with sample[] arrays
+  if (!diet.sample) return {};
   const counts = extractIngredients(diet.sample);
   const groups = {};
   for (const [item, freq] of counts) {

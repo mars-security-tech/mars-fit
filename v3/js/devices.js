@@ -1,6 +1,10 @@
 /**
  * MARS FIT v3 — Integracion con dispositivos fitness
  *
+ * ⚠️ AVISO RENPHO: La API de RENPHO es no oficial (reverse-engineered).
+ * Las credenciales (email + session token) se almacenan en localStorage
+ * en texto plano. No usar en entornos compartidos.
+ *
  * Apple Watch / HealthKit  → via Apple Health export XML o Web Bluetooth (HR)
  * Oura Ring 4              → via Oura Cloud API v2 (OAuth2 + REST)
  * RENPHO Smart Scale       → via RENPHO API (no oficial) o import CSV
@@ -46,6 +50,13 @@ export const AppleWatch = {
 
   // Web Bluetooth: leer HR en tiempo real del Apple Watch / cualquier HR monitor BLE
   async connectBluetooth() {
+    // Safari / iOS do not support Web Bluetooth
+    const ua = navigator.userAgent || '';
+    const isSafariOnly = /Safari/.test(ua) && !/Chrome/.test(ua);
+    const isIOS = /iPad|iPhone|iPod/.test(ua);
+    if (isIOS || isSafariOnly) {
+      throw new Error('Web Bluetooth no esta soportado en Safari/iOS. Usa el metodo de exportacion XML desde Salud.');
+    }
     if (!navigator.bluetooth) throw new Error('Web Bluetooth no disponible en este navegador');
 
     const device = await navigator.bluetooth.requestDevice({

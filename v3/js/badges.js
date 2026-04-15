@@ -77,9 +77,9 @@ export const LEVELS = [
   { minXP: 1000, name: 'Rastreador',   emoji: '🐾',   color: '#DAA520' },
   { minXP: 1500, name: 'Arquero',      emoji: '🏹',   color: '#FF8C00' },
   { minXP: 2100, name: 'Guerrero',     emoji: '⚔️',   color: '#FF4500' },
-  { minXP: 3000, name: 'Cazador',      emoji: '🎯',   color: '#DAA520' },
-  { minXP: 4000, name: 'Gladiador',    emoji: '🛡️',   color: '#DC143C' },
-  { minXP: 5500, name: 'Espartano',    emoji: '⚡',    color: '#FFD700' },
+  { minXP: 3000, name: 'Gladiador',    emoji: '🛡️',   color: '#DC143C' },
+  { minXP: 4000, name: 'Espartano',    emoji: '⚡',    color: '#FFD700' },
+  { minXP: 5500, name: 'Cazador',      emoji: '🎯',   color: '#DAA520' },
 ];
 
 /**
@@ -214,14 +214,14 @@ export function renderLevelBar(xp) {
         <span style="font-size:10px;color:#555;">·</span>
         <span style="font-size:14px;" title="Guerrero">⚔️</span>
         <span style="font-size:10px;color:#555;">·</span>
-        <span style="font-size:14px;" title="Cazador">🎯</span>
-        <span style="font-size:10px;color:#555;">·</span>
         <span style="font-size:14px;" title="Gladiador">🛡️</span>
         <span style="font-size:10px;color:#555;">·</span>
         <span style="font-size:14px;" title="Espartano">⚡</span>
+        <span style="font-size:10px;color:#555;">·</span>
+        <span style="font-size:14px;" title="Cazador">🎯</span>
       </div>
 
-      ${maxLevel ? `<div style="text-align:center;margin-top:8px;font-size:13px;color:#FFD700;font-weight:700;font-family:var(--font-display,sans-serif);letter-spacing:0.1em;text-transform:uppercase;">⚡ NIVEL MAXIMO: ESPARTANO ⚡</div>` : ''}
+      ${maxLevel ? `<div style="text-align:center;margin-top:8px;font-size:13px;color:#DAA520;font-weight:700;font-family:var(--font-display,sans-serif);letter-spacing:0.1em;text-transform:uppercase;">🎯 NIVEL MAXIMO: CAZADOR 🎯</div>` : ''}
     </div>
   `;
 }
@@ -289,4 +289,62 @@ export function renderBadgePicker(targetEmail, onSelect) {
     </div>
     <div style="text-align:center;font-size:11px;color:#666;padding:4px 0;font-family:var(--font-display,sans-serif);letter-spacing:0.06em;text-transform:uppercase;">Toca para asignar insignia</div>
   `;
+}
+
+
+// ============================================================
+// AUTO-AWARDED BADGES — checked after workouts / XP updates
+// ============================================================
+
+const AUTO_BADGE_RULES = [
+  { key: 'fuego',    check: (state) => computeStreak(state.workouts || []) >= 30, desc: 'Racha de 30 dias' },
+  { key: 'tiburon',  check: (state) => (state.workouts || []).length >= 100, desc: '100 entrenos completados' },
+  { key: 'cohete',   check: (state) => computeXP(state) >= 3000, desc: 'Alcanzar nivel Gladiador' },
+  { key: 'corona',   check: (state) => computeXP(state) >= 5500, desc: 'Alcanzar nivel Cazador' },
+  { key: 'broccoli', check: (state) => {
+    const meals = state.meals || [];
+    const mealDays = new Set(meals.map(m => m.date));
+    const goodDays = [...mealDays].filter(date => meals.filter(m => m.date === date).length >= 3);
+    return goodDays.length >= 30;
+  }, desc: '30 dias con dieta completa' },
+];
+
+const AUTO_BADGE_STORE_KEY = 'marsfit_auto_badges';
+
+function _getAutoBadges() {
+  try { return JSON.parse(localStorage.getItem(AUTO_BADGE_STORE_KEY) || '[]'); }
+  catch { return []; }
+}
+
+function _saveAutoBadges(badges) {
+  localStorage.setItem(AUTO_BADGE_STORE_KEY, JSON.stringify(badges));
+}
+
+/**
+ * Check auto-awarded badges based on state thresholds.
+ * Returns array of newly unlocked badge keys (empty if none new).
+ * @param {Object} state - App state with workouts, meals, etc.
+ * @returns {string[]} Newly unlocked badge keys
+ */
+export function checkAutoBadges(state) {
+  const alreadyAwarded = _getAutoBadges();
+  const newlyUnlocked = [];
+
+  for (const rule of AUTO_BADGE_RULES) {
+    if (alreadyAwarded.includes(rule.key)) continue;
+    try {
+      if (rule.check(state)) {
+        newlyUnlocked.push(rule.key);
+        alreadyAwarded.push(rule.key);
+      }
+    } catch {
+      // Silently skip rules that fail (missing data, etc.)
+    }
+  }
+
+  if (newlyUnlocked.length > 0) {
+    _saveAutoBadges(alreadyAwarded);
+  }
+
+  return newlyUnlocked;
 }

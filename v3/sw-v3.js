@@ -17,7 +17,7 @@
 // CONFIGURACION
 // ============================================================
 
-const CACHE_NAME = 'marsfit-v3-1';
+const CACHE_NAME = 'marsfit-v3-2';
 const CACHE_API = 'marsfit-v3-api';
 const CACHE_FONTS = 'marsfit-v3-fonts';
 
@@ -30,6 +30,21 @@ const PRECACHE_ASSETS = [
   './js/app-v3.js',
   './js/store-v3.js',
   './js/router.js',
+  './js/auth.js',
+  './js/icons.js',
+  './js/views/home.js',
+  './js/views/workout.js',
+  './js/views/workout-log.js',
+  './js/views/exercise-library.js',
+  './js/views/exercise-detail.js',
+  './js/views/routine-builder.js',
+  './js/views/nutrition.js',
+  './js/views/diet-builder.js',
+  './js/views/circle.js',
+  './js/views/profile.js',
+  './js/views/onboarding.js',
+  './js/views/login.js',
+  './js/views/admin.js',
   './data/diets-v3.js',
   './data/routines-v3.js',
   '../icons/icon.png',
@@ -67,7 +82,6 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => cache.addAll(PRECACHE_ASSETS))
-      .catch(err => console.warn('[SW] Error en precache:', err))
   );
 });
 
@@ -126,7 +140,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // --- HTML shell: Stale-while-revalidate ---
+  // --- HTML shell / navigation: Stale-while-revalidate ---
   if (request.mode === 'navigate' || url.pathname.endsWith('.html') || url.pathname === '/' || url.pathname.endsWith('/')) {
     event.respondWith(staleWhileRevalidate(request, CACHE_NAME));
     return;
@@ -149,7 +163,13 @@ self.addEventListener('fetch', (event) => {
         }
         return response;
       })
-      .catch(() => caches.match(request).then(r => r || caches.match('./index.html')))
+      .catch(() =>
+        caches.match(request).then(r => {
+          if (r) return r;
+          // Non-navigation requests that fail offline: return 503, NOT index.html
+          return new Response('Offline', { status: 503, statusText: 'Service Unavailable' });
+        })
+      )
   );
 });
 
@@ -172,8 +192,11 @@ async function cacheFirst(request, cacheName) {
     }
     return response;
   } catch {
-    // Offline fallback
-    return caches.match('./index.html');
+    // Offline fallback — only return index.html for navigation, else 503
+    if (request.mode === 'navigate') {
+      return caches.match('./index.html');
+    }
+    return new Response('Offline', { status: 503, statusText: 'Service Unavailable' });
   }
 }
 

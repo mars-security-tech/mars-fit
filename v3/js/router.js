@@ -53,6 +53,7 @@ let _moduleCache = new Map();
 let _navHistory = [];
 let _callbacks = [];
 let _transitioning = false;
+let _pendingRoute = null;
 
 // ============================================================
 // MATCHING DE RUTAS
@@ -155,7 +156,11 @@ export function onRouteChange(callback) {
 // ============================================================
 
 async function handleRouteChange(skipTransition = false) {
-  if (_transitioning) return;
+  // If already transitioning, queue this navigation and return
+  if (_transitioning) {
+    _pendingRoute = { skipTransition };
+    return;
+  }
   _transitioning = true;
 
   try {
@@ -190,7 +195,6 @@ async function handleRouteChange(skipTransition = false) {
 
     // Misma ruta, mismos params => no recargar
     if (route === _currentRoute && JSON.stringify(params) === JSON.stringify(_currentParams)) {
-      _transitioning = false;
       return;
     }
 
@@ -233,7 +237,6 @@ async function handleRouteChange(skipTransition = false) {
               <p class="text-tertiary text-xs mt-2">${config.module}</p>
             </div>`;
         }
-        _transitioning = false;
         return;
       }
     }
@@ -242,7 +245,6 @@ async function handleRouteChange(skipTransition = false) {
     const renderFn = mod[config.fn];
     if (typeof renderFn !== 'function') {
       console.error('[Router] Funcion render no encontrada en:', config.module);
-      _transitioning = false;
       return;
     }
 
@@ -268,6 +270,13 @@ async function handleRouteChange(skipTransition = false) {
 
   } finally {
     _transitioning = false;
+
+    // Process any queued navigation
+    if (_pendingRoute) {
+      const pending = _pendingRoute;
+      _pendingRoute = null;
+      handleRouteChange(pending.skipTransition);
+    }
   }
 }
 
@@ -296,24 +305,20 @@ export function initRouter(container, { isOnboarded = false, isLoggedIn = false,
   const onHashChange = () => handleRouteChange();
   window.addEventListener('hashchange', onHashChange);
 
-  const onPopState = () => handleRouteChange();
-  window.addEventListener('popstate', onPopState);
-
-  // Navegacion inicial
+  // Initial navigation: use replaceState to avoid firing a spurious hashchange
   if (!location.hash) {
     if (!isLoggedIn) {
-      location.hash = '#' + LOGIN_ROUTE;
+      history.replaceState(null, '', '#' + LOGIN_ROUTE);
     } else if (!isOnboarded) {
-      location.hash = '#' + ONBOARDING_ROUTE;
+      history.replaceState(null, '', '#' + ONBOARDING_ROUTE);
     } else {
-      location.hash = '#' + DEFAULT_ROUTE;
+      history.replaceState(null, '', '#' + DEFAULT_ROUTE);
     }
   }
   handleRouteChange(true);
 
   return () => {
     window.removeEventListener('hashchange', onHashChange);
-    window.removeEventListener('popstate', onPopState);
     if (_cleanupFn) { try { _cleanupFn(); } catch(e) {} }
   };
 }
